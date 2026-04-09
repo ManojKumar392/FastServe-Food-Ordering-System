@@ -1,4 +1,4 @@
-package com.manoj.FastServe.Entity;
+package com.manoj.fastserve.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +22,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private AppUser user;
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")

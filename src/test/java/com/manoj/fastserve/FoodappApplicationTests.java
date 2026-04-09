@@ -1,4 +1,4 @@
-package com.manoj.FastServe;
+package com.manoj.fastserve;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

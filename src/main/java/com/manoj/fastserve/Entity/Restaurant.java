@@ -1,5 +1,6 @@
-package com.manoj.FastServe.Entity;
+package com.manoj.fastserve.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,5 +21,6 @@ public class Restaurant {
     private String location;
 
     @OneToMany(mappedBy = "restaurant")
+    @JsonManagedReference
     private List<MenuItem> menuItems;
 }

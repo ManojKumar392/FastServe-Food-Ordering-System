@@ -1,4 +1,5 @@
-package com.manoj.FastServe.Entity;
+package com.manoj.fastserve.Entity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +21,7 @@ public class MenuItem {
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
+    @JsonBackReference
     private Restaurant restaurant;
 
     @Entity
@@ -39,7 +41,7 @@ public class MenuItem {
 
         @ManyToOne
         @JoinColumn(name = "user_id")
-        private User user;
+        private AppUser user;
 
         @ManyToOne
         @JoinColumn(name = "restaurant_id")

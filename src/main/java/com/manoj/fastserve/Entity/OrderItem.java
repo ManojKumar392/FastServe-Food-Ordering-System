@@ -1,4 +1,4 @@
-package com.manoj.FastServe.Entity;
+package com.manoj.fastserve.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
