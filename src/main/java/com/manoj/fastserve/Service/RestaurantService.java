@@ -29,4 +29,17 @@ public class RestaurantService {
 
         return menuItemRepository.findByRestaurant(restaurant);
     }
+
+    public MenuItem addMenuItem(Long restaurantId, MenuItem menuItem){
+
+        // 1. Get restaurant from DB
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        // 2. Connect menu item to restaurant
+        menuItem.setRestaurant(restaurant);
+
+        // 3. Save menu item
+        return menuItemRepository.save(menuItem);
+    }
 }
