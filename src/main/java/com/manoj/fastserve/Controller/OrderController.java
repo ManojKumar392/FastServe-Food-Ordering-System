@@ -47,4 +47,17 @@ public class OrderController {
 
         return orderService.updateStatus(id, status);
     }
+
+    @PostMapping("/user/{userId}")
+    public Order createOrderForUser(
+            @PathVariable Long userId,
+            @RequestBody CreateOrderRequest request) {
+
+        return orderService.createOrderForUser(userId, request);
+    }
+
+    @GetMapping("/users/{userId}")
+    public List<Order> getOrdersByUserId(@PathVariable Long userId) {
+        return orderService.getOrdersByUserId(userId);
+    }
 }

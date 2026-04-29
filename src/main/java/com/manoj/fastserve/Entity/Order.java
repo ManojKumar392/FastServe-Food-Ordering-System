@@ -31,6 +31,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     public Order() {
         this.createdAt = LocalDateTime.now();
     }
@@ -71,6 +75,14 @@ public class Order {
         this.paid = paid;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public Integer getEstimatedDeliveryTime() {
         return estimatedDeliveryTime;
     }
@@ -83,7 +95,6 @@ public class Order {
         return createdAt;
     }
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonManagedReference
     public List<OrderItem> getItems() {
         return items;
