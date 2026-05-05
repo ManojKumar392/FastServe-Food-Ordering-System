@@ -4,22 +4,23 @@ import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import com.manoj.fastserve.Repository.UserRepository;
-import com.manoj.fastserve.Entity.User;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Signup
     public UserResponseDTO register(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         User saved = userRepository.save(user);
         return mapToDTO(saved);
     }
@@ -30,7 +31,7 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
 
