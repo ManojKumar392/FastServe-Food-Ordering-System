@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Controller;
 
 import com.manoj.fastserve.DTO.LoginResponse;
+import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class UserController {
 
     // Signup
     @PostMapping("/signup")
-    public User signup(@RequestBody User user) {
+    public UserResponseDTO signup(@RequestBody User user) {
         return userService.register(user);
     }
 

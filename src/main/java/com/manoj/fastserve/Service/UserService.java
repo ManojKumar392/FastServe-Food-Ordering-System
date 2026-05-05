@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.LoginResponse;
+import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,9 @@ public class UserService {
     }
 
     // Signup
-    public User register(User user) {
-        return userRepository.save(user);
+    public UserResponseDTO register(User user) {
+        User saved = userRepository.save(user);
+        return mapToDTO(saved);
     }
 
     // Login
@@ -38,5 +40,14 @@ public class UserService {
                 user.getName(),
                 user.getEmail()
         );
+    }
+
+    private UserResponseDTO mapToDTO(User user) {
+        UserResponseDTO dto = new UserResponseDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setAddress(user.getAddress());
+        return dto;
     }
 }
