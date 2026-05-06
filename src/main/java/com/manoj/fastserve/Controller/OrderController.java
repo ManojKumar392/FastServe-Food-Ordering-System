@@ -60,4 +60,9 @@ public class OrderController {
     public List<Order> getOrdersByUserId(@PathVariable Long userId) {
         return orderService.getOrdersByUserId(userId);
     }
+
+    @PatchMapping("/{id}/cancel")
+    public Order cancelOrder(@PathVariable Long id) {
+        return orderService.cancelOrder(id);
+    }
 }

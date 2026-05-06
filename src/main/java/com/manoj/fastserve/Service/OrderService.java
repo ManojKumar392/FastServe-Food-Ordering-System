@@ -140,4 +140,22 @@ public class OrderService {
 
         return orderRepository.findByUserId(userId);
     }
+
+    public Order cancelOrder(Long orderId) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            throw new RuntimeException("Cannot cancel delivered order");
+        }
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new RuntimeException("Order already cancelled");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+
+        return orderRepository.save(order);
+    }
 }
