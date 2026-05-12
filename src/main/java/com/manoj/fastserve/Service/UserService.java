@@ -6,16 +6,19 @@ import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.manoj.fastserve.Util.JwtUtil;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     // Signup
@@ -35,11 +38,14 @@ public class UserService {
             throw new RuntimeException("Invalid password");
         }
 
+        String token = jwtUtil.generateToken(user.getEmail());
+
         return new LoginResponse(
                 "Login successful",
                 user.getId(),
                 user.getName(),
-                user.getEmail()
+                user.getEmail(),
+                token
         );
     }
 
