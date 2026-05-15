@@ -3,6 +3,7 @@ package com.manoj.fastserve.Service;
 import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
+import com.manoj.fastserve.Entity.Role;
 import com.manoj.fastserve.Repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class UserService {
     // Signup
     public UserResponseDTO register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(Role.USER);
         User saved = userRepository.save(user);
         return mapToDTO(saved);
     }
@@ -38,7 +40,10 @@ public class UserService {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(
+                user.getEmail(),
+                user.getRole().name()
+        );
 
         return new LoginResponse(
                 "Login successful",

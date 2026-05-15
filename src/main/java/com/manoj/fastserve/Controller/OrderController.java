@@ -4,6 +4,7 @@ import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.Entity.Order;
 import com.manoj.fastserve.Entity.OrderStatus;
 import com.manoj.fastserve.Service.OrderService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class OrderController {
     }
 
     // GET all orders
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<Order> getAllOrders() {
         return orderService.getAllOrders();
@@ -35,11 +37,13 @@ public class OrderController {
         return orderService.getOrderById(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/pay")
     public Order markAsPaid(@PathVariable Long id) {
         return orderService.markAsPaid(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     public Order updateStatus(
             @PathVariable Long id,
