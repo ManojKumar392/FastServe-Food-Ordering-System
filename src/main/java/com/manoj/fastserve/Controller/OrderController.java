@@ -19,11 +19,6 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping
-    public Order placeOrder(@RequestBody CreateOrderRequest request) {
-        return orderService.placeOrder(request);
-    }
-
     // GET all orders
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping

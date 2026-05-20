@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Service
 public class OrderService {
@@ -30,40 +31,6 @@ public class OrderService {
         this.userRepository = userRepository;
     }
 
-    public Order placeOrder(CreateOrderRequest request) {
-
-        Order order = new Order();
-        order.setPaymentMode(request.getPaymentMode());
-        order.setPaid(false);
-        order.setStatus(OrderStatus.PLACED);
-
-        double total = 0;
-        List<OrderItem> savedItems = new ArrayList<>();
-
-        order = orderRepository.save(order);
-
-        for (OrderItemRequest itemRequest : request.getItems()) {
-
-            MenuItem menuItem = menuItemRepository.findById(itemRequest.getMenuItemId())
-                    .orElseThrow(() -> new RuntimeException("Menu item not found"));
-
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setMenuItemName(menuItem.getName());
-            orderItem.setPrice(menuItem.getPrice());
-            orderItem.setQuantity(itemRequest.getQuantity());
-
-            total += menuItem.getPrice() * itemRequest.getQuantity();
-
-            savedItems.add(orderItemRepository.save(orderItem));
-        }
-
-        order.setTotalPrice(total);
-        order.setItems(savedItems);
-
-        return orderRepository.save(order);
-    }
-
     // GET all orders
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
@@ -71,8 +38,14 @@ public class OrderService {
 
     // GET order by ID
     public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
+
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        User user = getCurrentUser();
+        checkOwnership(order, user);
+
+        return order;
     }
 
     public Order markAsPaid(Long id) {
@@ -97,6 +70,13 @@ public class OrderService {
     }
 
     public Order createOrderForUser(Long userId, CreateOrderRequest request) {
+
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() != Role.ADMIN &&
+                !currentUser.getId().equals(userId)) {
+            throw new RuntimeException("Access denied");
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -135,6 +115,14 @@ public class OrderService {
     }
 
     public List<Order> getOrdersByUserId(Long userId) {
+
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() != Role.ADMIN &&
+                !currentUser.getId().equals(userId)) {
+            throw new RuntimeException("Access denied");
+        }
+
         userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -145,6 +133,9 @@ public class OrderService {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        User user = getCurrentUser();
+        checkOwnership(order, user);
 
         if (order.getStatus() == OrderStatus.DELIVERED) {
             throw new RuntimeException("Cannot cancel delivered order");
@@ -157,5 +148,21 @@ public class OrderService {
         order.setStatus(OrderStatus.CANCELLED);
 
         return orderRepository.save(order);
+    }
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    private void checkOwnership(Order order, User user) {
+        if (user.getRole() == Role.ADMIN) return;
+
+        if (order.getUser() == null ||
+                !order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied: not your order");
+        }
     }
 }
