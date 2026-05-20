@@ -3,6 +3,9 @@ package com.manoj.fastserve.Service;
 import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.DTO.OrderItemRequest;
 import com.manoj.fastserve.Entity.*;
+import com.manoj.fastserve.Exception.BadRequestException;
+import com.manoj.fastserve.Exception.ResourceNotFoundException;
+import com.manoj.fastserve.Exception.UnauthorizedException;
 import com.manoj.fastserve.Repository.MenuItemRepository;
 import com.manoj.fastserve.Repository.OrderItemRepository;
 import com.manoj.fastserve.Repository.OrderRepository;
@@ -40,7 +43,7 @@ public class OrderService {
     public Order getOrderById(Long id) {
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         User user = getCurrentUser();
         checkOwnership(order, user);
@@ -51,7 +54,7 @@ public class OrderService {
     public Order markAsPaid(Long id) {
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setPaid(true);
         order.setStatus(OrderStatus.PAID);
@@ -62,7 +65,7 @@ public class OrderService {
     public Order updateStatus(Long id, OrderStatus status) {
 
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setStatus(status);
 
@@ -75,11 +78,11 @@ public class OrderService {
 
         if (currentUser.getRole() != Role.ADMIN &&
                 !currentUser.getId().equals(userId)) {
-            throw new RuntimeException("Access denied");
+            throw new UnauthorizedException("Access denied");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Order order = new Order();
         order.setUser(user);
@@ -95,7 +98,7 @@ public class OrderService {
         for (OrderItemRequest itemRequest : request.getItems()) {
 
             MenuItem menuItem = menuItemRepository.findById(itemRequest.getMenuItemId())
-                    .orElseThrow(() -> new RuntimeException("Menu item not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Menu item not found"));
 
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
@@ -120,11 +123,11 @@ public class OrderService {
 
         if (currentUser.getRole() != Role.ADMIN &&
                 !currentUser.getId().equals(userId)) {
-            throw new RuntimeException("Access denied");
+            throw new UnauthorizedException("Access denied");
         }
 
         userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return orderRepository.findByUserId(userId);
     }
@@ -132,17 +135,17 @@ public class OrderService {
     public Order cancelOrder(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         User user = getCurrentUser();
         checkOwnership(order, user);
 
         if (order.getStatus() == OrderStatus.DELIVERED) {
-            throw new RuntimeException("Cannot cancel delivered order");
+            throw new BadRequestException("Cannot cancel delivered order");
         }
 
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Order already cancelled");
+            throw new BadRequestException("Order already cancelled");
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -154,7 +157,7 @@ public class OrderService {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     private void checkOwnership(Order order, User user) {
@@ -162,7 +165,7 @@ public class OrderService {
 
         if (order.getUser() == null ||
                 !order.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Access denied: not your order");
+            throw new UnauthorizedException("Access denied: not your order");
         }
     }
 }

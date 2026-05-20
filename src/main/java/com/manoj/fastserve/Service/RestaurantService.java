@@ -1,5 +1,6 @@
 package com.manoj.fastserve.Service;
 
+import com.manoj.fastserve.Exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import com.manoj.fastserve.Entity.Restaurant;
@@ -25,7 +26,7 @@ public class RestaurantService {
 
     public List<MenuItem> getMenuByRestaurant(Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         return menuItemRepository.findByRestaurant(restaurant);
     }
@@ -34,7 +35,7 @@ public class RestaurantService {
 
         // 1. Get restaurant from DB
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         // 2. Connect menu item to restaurant
         menuItem.setRestaurant(restaurant);

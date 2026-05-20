@@ -4,6 +4,8 @@ import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Entity.Role;
+import com.manoj.fastserve.Exception.BadRequestException;
+import com.manoj.fastserve.Exception.ResourceNotFoundException;
 import com.manoj.fastserve.Repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,10 +36,10 @@ public class UserService {
     public LoginResponse login(String email, String password) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            throw new BadRequestException("Invalid password");
         }
 
         String token = jwtUtil.generateToken(
