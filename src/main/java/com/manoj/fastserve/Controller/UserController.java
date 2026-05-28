@@ -4,6 +4,7 @@ import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,7 +19,7 @@ public class UserController {
 
     // Signup
     @PostMapping("/signup")
-    public UserResponseDTO signup(@RequestBody User user) {
+    public UserResponseDTO signup(@Valid @RequestBody User user) {
         return userService.register(user);
     }
 

@@ -4,6 +4,7 @@ import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.Entity.Order;
 import com.manoj.fastserve.Entity.OrderStatus;
 import com.manoj.fastserve.Service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +51,7 @@ public class OrderController {
     @PostMapping("/user/{userId}")
     public Order createOrderForUser(
             @PathVariable Long userId,
-            @RequestBody CreateOrderRequest request) {
+            @Valid @RequestBody CreateOrderRequest request) {
 
         return orderService.createOrderForUser(userId, request);
     }

@@ -1,10 +1,11 @@
 package com.manoj.fastserve.Controller;
-import org.springframework.web.bind.annotation.*;
 
-import java.awt.*;
-import java.util.List;
 import com.manoj.fastserve.Entity.MenuItem;
 import com.manoj.fastserve.Service.RestaurantService;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/restaurants")
@@ -21,7 +22,10 @@ public class RestaurantController {
     }
 
     @PostMapping("/{id}/menu")
-    public MenuItem addMenuItem(@PathVariable Long id, @RequestBody MenuItem menuItem){
+    public MenuItem addMenuItem(
+            @PathVariable Long id,
+            @Valid @RequestBody MenuItem menuItem){
+
         return restaurantService.addMenuItem(id, menuItem);
     }
 }
