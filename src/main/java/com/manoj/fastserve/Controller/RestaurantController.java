@@ -4,6 +4,8 @@ import com.manoj.fastserve.Entity.MenuItem;
 import com.manoj.fastserve.Service.RestaurantService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -17,15 +19,20 @@ public class RestaurantController {
     }
 
     @GetMapping("/{id}/menu")
-    public List<MenuItem> getMenu(@PathVariable Long id) {
-        return restaurantService.getMenuByRestaurant(id);
+    public ResponseEntity<List<MenuItem>> getMenu(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                restaurantService.getMenuByRestaurant(id)
+        );
     }
 
     @PostMapping("/{id}/menu")
-    public MenuItem addMenuItem(
+    public ResponseEntity<MenuItem> addMenuItem(
             @PathVariable Long id,
             @Valid @RequestBody MenuItem menuItem){
 
-        return restaurantService.addMenuItem(id, menuItem);
+        return new ResponseEntity<>(
+                restaurantService.addMenuItem(id, menuItem),
+                HttpStatus.CREATED
+        );
     }
 }

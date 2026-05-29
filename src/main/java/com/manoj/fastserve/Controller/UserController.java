@@ -6,6 +6,8 @@ import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/users")
@@ -19,16 +21,21 @@ public class UserController {
 
     // Signup
     @PostMapping("/signup")
-    public UserResponseDTO signup(@Valid @RequestBody User user) {
-        return userService.register(user);
+    public ResponseEntity<UserResponseDTO> signup(@Valid @RequestBody User user) {
+        return new ResponseEntity<>(
+                userService.register(user),
+                HttpStatus.CREATED
+        );
     }
 
     // Login
     @PostMapping("/login")
-    public LoginResponse login(
+    public ResponseEntity<LoginResponse> login(
             @RequestParam String email,
             @RequestParam String password) {
 
-        return userService.login(email, password);
+        return ResponseEntity.ok(
+                userService.login(email, password)
+        );
     }
 }

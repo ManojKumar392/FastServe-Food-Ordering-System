@@ -5,6 +5,8 @@ import com.manoj.fastserve.Entity.Order;
 import com.manoj.fastserve.Entity.OrderStatus;
 import com.manoj.fastserve.Service.OrderService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,46 +25,53 @@ public class OrderController {
     // GET all orders
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    public ResponseEntity<List<Order>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     // GET one order
     @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable Long id) {
-        return orderService.getOrderById(id);
+    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/pay")
-    public Order markAsPaid(@PathVariable Long id) {
-        return orderService.markAsPaid(id);
+    public ResponseEntity<Order> markAsPaid(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.markAsPaid(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
-    public Order updateStatus(
+    public ResponseEntity<Order> updateStatus(
             @PathVariable Long id,
             @RequestParam OrderStatus status) {
 
-        return orderService.updateStatus(id, status);
+        return ResponseEntity.ok(
+                orderService.updateStatus(id, status)
+        );
     }
 
     @PostMapping("/user/{userId}")
-    public Order createOrderForUser(
+    public ResponseEntity<Order> createOrderForUser(
             @PathVariable Long userId,
             @Valid @RequestBody CreateOrderRequest request) {
 
-        return orderService.createOrderForUser(userId, request);
+        return new ResponseEntity<>(
+                orderService.createOrderForUser(userId, request),
+                HttpStatus.CREATED
+        );
     }
 
     @GetMapping("/users/{userId}")
-    public List<Order> getOrdersByUserId(@PathVariable Long userId) {
-        return orderService.getOrdersByUserId(userId);
+    public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(
+                orderService.getOrdersByUserId(userId)
+        );
     }
 
     @PatchMapping("/{id}/cancel")
-    public Order cancelOrder(@PathVariable Long id) {
-        return orderService.cancelOrder(id);
+    public ResponseEntity<Order> cancelOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.cancelOrder(id));
     }
 }
