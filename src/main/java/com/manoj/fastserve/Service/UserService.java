@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.LoginResponse;
+import com.manoj.fastserve.DTO.RefreshResponse;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.RefreshToken;
 import com.manoj.fastserve.Entity.User;
@@ -83,16 +84,40 @@ public class UserService {
         return dto;
     }
 
-    public String refreshAccessToken(String refreshTokenValue) {
+    public RefreshResponse refreshAccessToken(
+            String refreshTokenValue
+    ) {
 
-        RefreshToken refreshToken =
-                refreshTokenService.verifyRefreshToken(refreshTokenValue);
+        RefreshToken oldRefreshToken =
+                refreshTokenService.verifyRefreshToken(
+                        refreshTokenValue
+                );
 
-        User user = refreshToken.getUser();
+        User user = oldRefreshToken.getUser();
 
-        return jwtUtil.generateAccessToken(
-                user.getEmail(),
-                user.getRole().name()
+        String newAccessToken =
+                jwtUtil.generateAccessToken(
+                        user.getEmail(),
+                        user.getRole().name()
+                );
+
+        String newRefreshToken =
+                jwtUtil.generateRefreshToken(
+                        user.getEmail()
+                );
+
+        refreshTokenService.deleteRefreshToken(
+                oldRefreshToken
+        );
+
+        refreshTokenService.createRefreshToken(
+                user,
+                newRefreshToken
+        );
+
+        return new RefreshResponse(
+                newAccessToken,
+                newRefreshToken
         );
     }
 

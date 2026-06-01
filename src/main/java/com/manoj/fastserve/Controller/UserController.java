@@ -1,9 +1,6 @@
 package com.manoj.fastserve.Controller;
 
-import com.manoj.fastserve.DTO.LoginResponse;
-import com.manoj.fastserve.DTO.LogoutRequest;
-import com.manoj.fastserve.DTO.RefreshTokenRequest;
-import com.manoj.fastserve.DTO.UserResponseDTO;
+import com.manoj.fastserve.DTO.*;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Service.UserService;
 import jakarta.validation.Valid;
@@ -43,18 +40,18 @@ public class UserController {
 
     // Refresh
     @PostMapping("/refresh")
-    public ResponseEntity<String> refreshToken(
+    public ResponseEntity<RefreshResponse> refreshToken(
             @RequestBody RefreshTokenRequest request
     ) {
 
-        String accessToken =
+        return ResponseEntity.ok(
                 userService.refreshAccessToken(
                         request.getRefreshToken()
-                );
-
-        return ResponseEntity.ok(accessToken);
+                )
+        );
     }
 
+    // Logout
     @PostMapping("/logout")
     public ResponseEntity<String> logout(
             @RequestBody LogoutRequest request

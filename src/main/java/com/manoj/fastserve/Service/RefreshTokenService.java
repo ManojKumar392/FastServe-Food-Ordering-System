@@ -60,4 +60,8 @@ public class RefreshTokenService {
 
         refreshTokenRepository.delete(refreshToken);
     }
+
+    public void deleteRefreshToken(RefreshToken refreshToken) {
+        refreshTokenRepository.delete(refreshToken);
+    }
 }
