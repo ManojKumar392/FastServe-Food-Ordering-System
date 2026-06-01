@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class OrderService {
@@ -35,8 +37,8 @@ public class OrderService {
     }
 
     // GET all orders
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable);
     }
 
     // GET order by ID
@@ -117,7 +119,7 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public List<Order> getOrdersByUserId(Long userId) {
+    public Page<Order> getOrdersByUserId(Long userId, Pageable pageable) {
 
         User currentUser = getCurrentUser();
 
@@ -129,7 +131,7 @@ public class OrderService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return orderRepository.findByUserId(userId);
+        return orderRepository.findByUserId(userId, pageable);
     }
 
     public Order cancelOrder(Long orderId) {

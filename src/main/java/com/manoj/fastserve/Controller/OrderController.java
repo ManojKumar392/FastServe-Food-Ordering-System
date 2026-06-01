@@ -11,6 +11,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/orders")
@@ -25,8 +27,8 @@ public class OrderController {
     // GET all orders
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    public ResponseEntity<Page<Order>> getAllOrders(Pageable pageable) {
+        return ResponseEntity.ok(orderService.getAllOrders(pageable));
     }
 
     // GET one order
@@ -64,9 +66,11 @@ public class OrderController {
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable Long userId) {
+    public ResponseEntity<Page<Order>> getOrdersByUserId(
+            @PathVariable Long userId,
+            Pageable pageable) {
         return ResponseEntity.ok(
-                orderService.getOrdersByUserId(userId)
+                orderService.getOrdersByUserId(userId, pageable)
         );
     }
 

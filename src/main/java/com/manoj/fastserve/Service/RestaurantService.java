@@ -8,6 +8,9 @@ import com.manoj.fastserve.Entity.MenuItem;
 import com.manoj.fastserve.Repository.RestaurantRepository;
 import com.manoj.fastserve.Repository.MenuItemRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class RestaurantService {
 
@@ -20,8 +23,8 @@ public class RestaurantService {
         this.menuItemRepository = menuItemRepository;
     }
 
-    public List<Restaurant> getAllRestaurants() {
-        return restaurantRepository.findAll();
+    public Page<Restaurant> getAllRestaurants(Pageable pageable) {
+        return restaurantRepository.findAll(pageable);
     }
 
     public List<MenuItem> getMenuByRestaurant(Long restaurantId) {
