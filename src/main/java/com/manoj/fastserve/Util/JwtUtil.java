@@ -24,14 +24,25 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    // Generate token
-    public String generateToken(String email, String role) {
+    // Generate Access Token (1 hour)
+    public String generateAccessToken(String email, String role) {
 
         return Jwts.builder()
                 .subject(email)
                 .claim("role", role)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    // Generate Refresh Token (7 days)
+    public String generateRefreshToken(String email) {
+
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

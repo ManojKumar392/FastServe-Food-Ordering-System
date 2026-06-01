@@ -2,6 +2,7 @@ package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.UserResponseDTO;
+import com.manoj.fastserve.Entity.RefreshToken;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Entity.Role;
 import com.manoj.fastserve.Exception.BadRequestException;
@@ -17,11 +18,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtUtil jwtUtil,
+            RefreshTokenService refreshTokenService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.refreshTokenService = refreshTokenService;
     }
 
     // Signup
@@ -42,9 +50,18 @@ public class UserService {
             throw new BadRequestException("Invalid password");
         }
 
-        String token = jwtUtil.generateToken(
+        String accessToken = jwtUtil.generateAccessToken(
                 user.getEmail(),
                 user.getRole().name()
+        );
+
+        String refreshToken = jwtUtil.generateRefreshToken(
+                user.getEmail()
+        );
+
+        refreshTokenService.createRefreshToken(
+                user,
+                refreshToken
         );
 
         return new LoginResponse(
@@ -52,7 +69,8 @@ public class UserService {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                token
+                accessToken,
+                refreshToken
         );
     }
 
@@ -63,5 +81,23 @@ public class UserService {
         dto.setEmail(user.getEmail());
         dto.setAddress(user.getAddress());
         return dto;
+    }
+
+    public String refreshAccessToken(String refreshTokenValue) {
+
+        RefreshToken refreshToken =
+                refreshTokenService.verifyRefreshToken(refreshTokenValue);
+
+        User user = refreshToken.getUser();
+
+        return jwtUtil.generateAccessToken(
+                user.getEmail(),
+                user.getRole().name()
+        );
+    }
+
+    public void logout(String refreshToken) {
+
+        refreshTokenService.deleteRefreshToken(refreshToken);
     }
 }

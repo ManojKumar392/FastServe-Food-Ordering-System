@@ -1,6 +1,8 @@
 package com.manoj.fastserve.Controller;
 
 import com.manoj.fastserve.DTO.LoginResponse;
+import com.manoj.fastserve.DTO.LogoutRequest;
+import com.manoj.fastserve.DTO.RefreshTokenRequest;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 import com.manoj.fastserve.Service.UserService;
@@ -36,6 +38,34 @@ public class UserController {
 
         return ResponseEntity.ok(
                 userService.login(email, password)
+        );
+    }
+
+    // Refresh
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshToken(
+            @RequestBody RefreshTokenRequest request
+    ) {
+
+        String accessToken =
+                userService.refreshAccessToken(
+                        request.getRefreshToken()
+                );
+
+        return ResponseEntity.ok(accessToken);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(
+            @RequestBody LogoutRequest request
+    ) {
+
+        userService.logout(
+                request.getRefreshToken()
+        );
+
+        return ResponseEntity.ok(
+                "Logout successful"
         );
     }
 }
