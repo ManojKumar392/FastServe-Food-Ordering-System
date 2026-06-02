@@ -9,7 +9,7 @@ import jakarta.persistence.Enumerated;
 
 @Entity
 @Table(name = "orders")
-public class Order {
+public class Order extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,18 +26,12 @@ public class Order {
 
     private Integer estimatedDeliveryTime;
 
-    private LocalDateTime createdAt;
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    public Order() {
-        this.createdAt = LocalDateTime.now();
-    }
 
     public Long getId() {
         return id;
@@ -89,10 +83,6 @@ public class Order {
 
     public void setEstimatedDeliveryTime(Integer estimatedDeliveryTime) {
         this.estimatedDeliveryTime = estimatedDeliveryTime;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 
     @JsonManagedReference
