@@ -1,6 +1,8 @@
 package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.Exception.ResourceNotFoundException;
+import com.manoj.fastserve.Repository.spec.RestaurantSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import com.manoj.fastserve.Entity.Restaurant;
@@ -45,5 +47,14 @@ public class RestaurantService {
 
         // 3. Save menu item
         return menuItemRepository.save(menuItem);
+    }
+
+    public List<Restaurant> searchRestaurants(String name, String location) {
+
+        Specification<Restaurant> spec = Specification
+                .where(RestaurantSpecification.hasName(name))
+                .and(RestaurantSpecification.hasLocation(location));
+
+        return restaurantRepository.findAll(spec);
     }
 }

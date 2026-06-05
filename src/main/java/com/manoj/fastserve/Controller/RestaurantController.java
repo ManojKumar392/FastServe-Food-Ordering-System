@@ -47,4 +47,14 @@ public class RestaurantController {
                 restaurantService.getAllRestaurants(pageable)
         );
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Restaurant>> searchRestaurants(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String location
+    ) {
+        return ResponseEntity.ok(
+                restaurantService.searchRestaurants(name, location)
+        );
+    }
 }
