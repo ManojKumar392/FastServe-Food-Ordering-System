@@ -57,4 +57,24 @@ public class RestaurantController {
                 restaurantService.searchRestaurants(name, location)
         );
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteRestaurant(
+            @PathVariable Long id
+    ) {
+
+        restaurantService.softDeleteRestaurant(id);
+
+        return ResponseEntity.ok("Restaurant deleted");
+    }
+
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<Restaurant> restoreRestaurant(
+            @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+                restaurantService.restoreRestaurant(id)
+        );
+    }
 }

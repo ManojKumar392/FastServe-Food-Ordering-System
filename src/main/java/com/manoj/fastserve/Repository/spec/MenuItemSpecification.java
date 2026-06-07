@@ -44,4 +44,10 @@ public class MenuItemSpecification {
                                 restaurantId
                         );
     }
+
+    public static Specification<MenuItem> notDeleted() {
+
+        return (root, query, cb) ->
+                cb.isFalse(root.get("isDeleted"));
+    }
 }

@@ -28,3 +28,4 @@ public class Restaurant extends BaseEntity{
     @JsonManagedReference
     private List<MenuItem> menuItems;
 }
+

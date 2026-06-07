@@ -3,6 +3,7 @@ package com.manoj.fastserve.Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,19 +13,24 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
+    @Getter
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Getter
     @LastModifiedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public void setIsDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }

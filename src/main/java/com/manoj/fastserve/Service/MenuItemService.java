@@ -27,11 +27,14 @@ public class MenuItemService {
             Pageable pageable
     ) {
 
-        Specification<MenuItem> spec = Specification
-                .where(MenuItemSpecification.hasName(name))
-                .and(MenuItemSpecification.minPrice(minPrice))
-                .and(MenuItemSpecification.maxPrice(maxPrice))
-                .and(MenuItemSpecification.restaurantId(restaurantId));
+        Specification<MenuItem> spec =
+                Specification.where(
+                                MenuItemSpecification.notDeleted()
+                        )
+                        .and(MenuItemSpecification.hasName(name))
+                        .and(MenuItemSpecification.minPrice(minPrice))
+                        .and(MenuItemSpecification.maxPrice(maxPrice))
+                        .and(MenuItemSpecification.restaurantId(restaurantId));
 
         return menuItemRepository.findAll(
                 spec,

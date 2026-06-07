@@ -18,4 +18,10 @@ public class RestaurantSpecification {
                         cb.like(cb.lower(root.get("location")),
                                 "%" + location.toLowerCase() + "%");
     }
+
+    public static Specification<Restaurant> notDeleted() {
+
+        return (root, query, cb) ->
+                cb.isFalse(root.get("isDeleted"));
+    }
 }

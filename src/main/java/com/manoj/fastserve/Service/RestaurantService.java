@@ -26,12 +26,15 @@ public class RestaurantService {
     }
 
     public Page<Restaurant> getAllRestaurants(Pageable pageable) {
-        return restaurantRepository.findAll(pageable);
+        return restaurantRepository.findAllByIsDeletedFalse(pageable);
     }
 
     public List<MenuItem> getMenuByRestaurant(Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+
+        Restaurant restaurant = restaurantRepository
+                .findByIdAndIsDeletedFalse(restaurantId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Restaurant not found"));
 
         return menuItemRepository.findByRestaurant(restaurant);
     }
@@ -39,8 +42,10 @@ public class RestaurantService {
     public MenuItem addMenuItem(Long restaurantId, MenuItem menuItem){
 
         // 1. Get restaurant from DB
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        Restaurant restaurant = restaurantRepository
+                .findByIdAndIsDeletedFalse(restaurantId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Restaurant not found"));
 
         // 2. Connect menu item to restaurant
         menuItem.setRestaurant(restaurant);
@@ -51,10 +56,52 @@ public class RestaurantService {
 
     public List<Restaurant> searchRestaurants(String name, String location) {
 
-        Specification<Restaurant> spec = Specification
-                .where(RestaurantSpecification.hasName(name))
-                .and(RestaurantSpecification.hasLocation(location));
+        Specification<Restaurant> spec =
+                Specification.where(
+                                RestaurantSpecification.notDeleted()
+                        )
+                        .and(RestaurantSpecification.hasName(name))
+                        .and(RestaurantSpecification.hasLocation(location));
 
         return restaurantRepository.findAll(spec);
+    }
+
+    public void softDeleteRestaurant(Long id) {
+
+        Restaurant restaurant = restaurantRepository
+                .findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Restaurant not found"));
+
+        restaurant.setIsDeleted(true);
+
+        if (restaurant.getMenuItems() != null) {
+
+            for (MenuItem item : restaurant.getMenuItems()) {
+                item.setIsDeleted(true);
+                menuItemRepository.save(item);
+            }
+        }
+
+        restaurantRepository.save(restaurant);
+    }
+
+    public Restaurant restoreRestaurant(Long id) {
+
+        Restaurant restaurant = restaurantRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Restaurant not found"));
+
+        restaurant.setIsDeleted(false);
+
+        if (restaurant.getMenuItems() != null) {
+
+            for (MenuItem item : restaurant.getMenuItems()) {
+                item.setIsDeleted(false);
+                menuItemRepository.save(item);
+            }
+        }
+
+        return restaurantRepository.save(restaurant);
     }
 }
