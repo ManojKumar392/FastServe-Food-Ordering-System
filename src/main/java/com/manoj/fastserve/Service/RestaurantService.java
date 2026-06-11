@@ -36,7 +36,7 @@ public class RestaurantService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Restaurant not found"));
 
-        return menuItemRepository.findByRestaurant(restaurant);
+        return menuItemRepository.findByRestaurantAndIsDeletedFalse(restaurant);
     }
 
     public MenuItem addMenuItem(Long restaurantId, MenuItem menuItem){
@@ -105,3 +105,4 @@ public class RestaurantService {
         return restaurantRepository.save(restaurant);
     }
 }
+

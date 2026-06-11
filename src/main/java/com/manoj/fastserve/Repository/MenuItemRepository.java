@@ -12,4 +12,8 @@ public interface MenuItemRepository
     List<MenuItem> findByRestaurant(Restaurant restaurant);
 
     List<MenuItem> findByNameContainingIgnoreCase(String name);
+
+    List<MenuItem> findByRestaurantAndIsDeletedFalse(
+            Restaurant restaurant
+    );
 }
