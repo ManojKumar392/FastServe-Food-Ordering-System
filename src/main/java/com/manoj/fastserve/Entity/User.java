@@ -16,6 +16,10 @@ public class User extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     @Setter
     @NotBlank(message = "Name is required")
     private String name;

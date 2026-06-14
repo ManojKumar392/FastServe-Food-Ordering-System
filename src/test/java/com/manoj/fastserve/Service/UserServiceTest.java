@@ -56,6 +56,7 @@ class UserServiceTest {
         User user = new User();
 
         user.setName("Manoj");
+        user.setId(1L);
         user.setEmail("test@test.com");
         user.setPassword("password");
         user.setAddress("India");
@@ -99,6 +100,7 @@ class UserServiceTest {
         User user = new User();
 
         user.setName("Manoj");
+        user.setId(1L);
         user.setEmail("test@test.com");
         user.setPassword("encrypted");
         user.setRole(Role.USER);
@@ -183,6 +185,7 @@ class UserServiceTest {
 
         User user = new User();
 
+        user.setId(1L);
         user.setEmail("test@test.com");
         user.setPassword("encrypted");
 
@@ -214,3 +217,5 @@ class UserServiceTest {
 
 
 }
+
+
