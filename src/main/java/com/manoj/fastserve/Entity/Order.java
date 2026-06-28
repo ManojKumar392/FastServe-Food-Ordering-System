@@ -8,7 +8,19 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
 @Entity
-@Table(name = "orders")
+@Table(
+        name = "orders",
+        indexes = {
+                @Index(
+                        name = "idx_order_user",
+                        columnList = "user_id"
+                ),
+                @Index(
+                        name = "idx_order_status",
+                        columnList = "status"
+                )
+        }
+)
 public class Order extends BaseEntity{
 
     @Id

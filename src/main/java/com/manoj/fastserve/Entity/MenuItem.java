@@ -9,6 +9,18 @@ import lombok.*;
 import java.util.List;
 
 @Entity
+@Table(
+        indexes = {
+                @Index(
+                        name = "idx_menu_item_name",
+                        columnList = "name"
+                ),
+                @Index(
+                        name = "idx_menu_restaurant",
+                        columnList = "restaurant_id"
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +38,7 @@ public class MenuItem extends BaseEntity{
     @Positive(message = "Price must be greater than 0")
     private Double price;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
     @JsonBackReference
     private Restaurant restaurant;

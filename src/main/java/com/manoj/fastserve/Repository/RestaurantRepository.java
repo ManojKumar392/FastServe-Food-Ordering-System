@@ -1,5 +1,6 @@
 package com.manoj.fastserve.Repository;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.manoj.fastserve.Entity.Restaurant;
 import org.springframework.data.domain.Page;
@@ -22,5 +23,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 
     Optional<Restaurant> findByIdAndIsDeletedFalse(Long id);
 
+    @EntityGraph(attributePaths = {"menuItems"})
     Page<Restaurant> findAllByIsDeletedFalse(Pageable pageable);
 }

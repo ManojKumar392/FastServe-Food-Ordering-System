@@ -8,6 +8,18 @@ import lombok.*;
 import java.util.List;
 
 @Entity
+@Table(
+        indexes = {
+                @Index(
+                        name = "idx_restaurant_name",
+                        columnList = "name"
+                ),
+                @Index(
+                        name = "idx_restaurant_location",
+                        columnList = "location"
+                )
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
