@@ -1,5 +1,6 @@
 package com.manoj.fastserve.Service;
 
+import com.manoj.fastserve.DTO.CreateRestaurantRequest;
 import com.manoj.fastserve.Exception.ResourceNotFoundException;
 import com.manoj.fastserve.Repository.spec.RestaurantSpecification;
 import org.springframework.cache.annotation.CacheEvict;
@@ -120,7 +121,12 @@ public class RestaurantService {
     }
 
     @CacheEvict(value = "restaurants", allEntries = true)
-    public Restaurant createRestaurant(Restaurant restaurant) {
+    public Restaurant createRestaurant(CreateRestaurantRequest request) {
+
+        Restaurant restaurant = new Restaurant();
+
+        restaurant.setName(request.getName());
+        restaurant.setLocation(request.getLocation());
 
         return restaurantRepository.save(restaurant);
     }
