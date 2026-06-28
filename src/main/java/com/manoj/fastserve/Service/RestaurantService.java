@@ -79,7 +79,10 @@ public class RestaurantService {
         return restaurantRepository.findAll(spec);
     }
 
-    @CacheEvict(value = "restaurants", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "restaurants", allEntries = true),
+            @CacheEvict(value = "restaurantMenu", key = "#id")
+    })
     public void softDeleteRestaurant(Long id) {
 
         Restaurant restaurant = restaurantRepository
