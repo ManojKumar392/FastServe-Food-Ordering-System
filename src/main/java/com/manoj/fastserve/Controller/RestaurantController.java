@@ -1,5 +1,6 @@
 package com.manoj.fastserve.Controller;
 
+import com.manoj.fastserve.DTO.CreateRestaurantRequest;
 import com.manoj.fastserve.Entity.MenuItem;
 import com.manoj.fastserve.Entity.Restaurant;
 import com.manoj.fastserve.Service.RestaurantService;
@@ -80,13 +81,13 @@ public class RestaurantController {
 
     @PostMapping
     public ResponseEntity<Restaurant> createRestaurant(
-            @Valid @RequestBody Restaurant restaurant
+            @Valid @RequestBody CreateRestaurantRequest request
     ) {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(
-                        restaurantService.createRestaurant(restaurant)
+                        restaurantService.createRestaurant(request)
                 );
     }
 
