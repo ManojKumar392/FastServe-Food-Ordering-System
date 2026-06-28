@@ -3,6 +3,7 @@ package com.manoj.fastserve.Service;
 import com.manoj.fastserve.Entity.MenuItem;
 import com.manoj.fastserve.Repository.MenuItemRepository;
 import com.manoj.fastserve.Repository.spec.MenuItemSpecification;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,6 +20,10 @@ public class MenuItemService {
         this.menuItemRepository = menuItemRepository;
     }
 
+    @Cacheable(
+            value = "menuSearch",
+            key = "#name + '-' + #minPrice + '-' + #maxPrice + '-' + #restaurantId + '-' + #pageable.pageNumber"
+    )
     public Page<MenuItem> searchMenu(
             String name,
             Double minPrice,

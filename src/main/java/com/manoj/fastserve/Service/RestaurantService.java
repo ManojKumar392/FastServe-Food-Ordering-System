@@ -2,6 +2,9 @@ package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.Exception.ResourceNotFoundException;
 import com.manoj.fastserve.Repository.spec.RestaurantSpecification;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -25,10 +28,15 @@ public class RestaurantService {
         this.menuItemRepository = menuItemRepository;
     }
 
+    @Cacheable(
+            value = "restaurants",
+            key = "#pageable.pageNumber + '-' + #pageable.pageSize"
+    )
     public Page<Restaurant> getAllRestaurants(Pageable pageable) {
         return restaurantRepository.findAllByIsDeletedFalse(pageable);
     }
 
+    @Cacheable(value = "restaurantMenu", key = "#restaurantId")
     public List<MenuItem> getMenuByRestaurant(Long restaurantId) {
 
         Restaurant restaurant = restaurantRepository
@@ -39,6 +47,10 @@ public class RestaurantService {
         return menuItemRepository.findByRestaurantAndIsDeletedFalse(restaurant);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "restaurantMenu", key = "#restaurantId"),
+            @CacheEvict(value = "menuSearch", allEntries = true)
+    })
     public MenuItem addMenuItem(Long restaurantId, MenuItem menuItem){
 
         // 1. Get restaurant from DB
@@ -66,6 +78,7 @@ public class RestaurantService {
         return restaurantRepository.findAll(spec);
     }
 
+    @CacheEvict(value = "restaurants", allEntries = true)
     public void softDeleteRestaurant(Long id) {
 
         Restaurant restaurant = restaurantRepository
@@ -86,6 +99,7 @@ public class RestaurantService {
         restaurantRepository.save(restaurant);
     }
 
+    @CacheEvict(value = "restaurants", allEntries = true)
     public Restaurant restoreRestaurant(Long id) {
 
         Restaurant restaurant = restaurantRepository.findById(id)
