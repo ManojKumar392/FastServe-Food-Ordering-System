@@ -77,4 +77,27 @@ public class RestaurantController {
                 restaurantService.restoreRestaurant(id)
         );
     }
+
+    @PostMapping
+    public ResponseEntity<Restaurant> createRestaurant(
+            @Valid @RequestBody Restaurant restaurant
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(
+                        restaurantService.createRestaurant(restaurant)
+                );
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Restaurant> updateRestaurant(
+            @PathVariable Long id,
+            @Valid @RequestBody Restaurant restaurant
+    ) {
+
+        return ResponseEntity.ok(
+                restaurantService.updateRestaurant(id, restaurant)
+        );
+    }
 }

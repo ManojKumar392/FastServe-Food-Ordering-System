@@ -118,5 +118,29 @@ public class RestaurantService {
 
         return restaurantRepository.save(restaurant);
     }
+
+    @CacheEvict(value = "restaurants", allEntries = true)
+    public Restaurant createRestaurant(Restaurant restaurant) {
+
+        return restaurantRepository.save(restaurant);
+    }
+
+    @CacheEvict(value = "restaurants", allEntries = true)
+    public Restaurant updateRestaurant(
+            Long id,
+            Restaurant updatedRestaurant
+    ) {
+
+        Restaurant restaurant = restaurantRepository
+                .findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Restaurant not found")
+                );
+
+        restaurant.setName(updatedRestaurant.getName());
+        restaurant.setLocation(updatedRestaurant.getLocation());
+
+        return restaurantRepository.save(restaurant);
+    }
 }
 
