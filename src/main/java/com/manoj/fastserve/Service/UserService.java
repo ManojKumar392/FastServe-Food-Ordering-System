@@ -37,6 +37,9 @@ public class UserService {
     public UserResponseDTO register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
+        if(userRepository.findByEmail(user.getEmail()).isPresent()){
+            throw new BadRequestException("Email already registered");
+        }
         User saved = userRepository.save(user);
         return mapToDTO(saved);
     }
