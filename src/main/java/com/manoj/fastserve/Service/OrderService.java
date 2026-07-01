@@ -69,6 +69,14 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
+        if (order.getStatus() == OrderStatus.DELIVERED &&
+                status == OrderStatus.CANCELLED) {
+
+            throw new BadRequestException(
+                    "Delivered order cannot be cancelled"
+            );
+        }
+
         order.setStatus(status);
 
         return orderRepository.save(order);
