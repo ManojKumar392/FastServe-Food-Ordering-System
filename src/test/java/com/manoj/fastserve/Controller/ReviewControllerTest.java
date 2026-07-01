@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Controller;
 
 
+import com.manoj.fastserve.Config.TestCacheConfig;
 import com.manoj.fastserve.DTO.CreateReviewRequest;
 import com.manoj.fastserve.Entity.Review;
 import com.manoj.fastserve.Service.ReviewService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 
+@Import(TestCacheConfig.class)
 @WebMvcTest(ReviewController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ReviewControllerTest {

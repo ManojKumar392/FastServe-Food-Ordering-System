@@ -4,11 +4,14 @@ import com.manoj.fastserve.Entity.OrderItem;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
+@MockitoBean(types = CacheManager.class)
 class OrderItemRepositoryTest {
 
 

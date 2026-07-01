@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.manoj.fastserve.Config.TestCacheConfig;
 import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.Entity.Order;
 import com.manoj.fastserve.Entity.OrderStatus;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
+@Import(TestCacheConfig.class)
 @WebMvcTest(OrderController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class OrderControllerTest {
