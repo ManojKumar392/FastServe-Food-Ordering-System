@@ -134,7 +134,7 @@ class OrderServiceTest {
                 new CreateOrderRequest();
 
 
-        request.setPaymentMode("COD");
+        request.setPaymentMode(PaymentMode.CASH);
 
 
 
@@ -244,7 +244,7 @@ class OrderServiceTest {
         CreateOrderRequest request =
                 new CreateOrderRequest();
 
-        request.setPaymentMode("UPI");
+        request.setPaymentMode(PaymentMode.UPI);
         request.setItems(List.of());
 
 
@@ -301,7 +301,7 @@ class OrderServiceTest {
                 new CreateOrderRequest();
 
 
-        request.setPaymentMode("COD");
+        request.setPaymentMode(PaymentMode.CASH);
 
 
         OrderItemRequest item =
