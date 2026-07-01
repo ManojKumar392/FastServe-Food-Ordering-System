@@ -4,12 +4,13 @@ import com.manoj.fastserve.Entity.PaymentMode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public class CreateOrderRequest {
 
-    @NotBlank(message = "Payment mode is required")
+    @NotNull(message = "Payment mode is required")
     private PaymentMode paymentMode;
 
     @NotEmpty(message = "Order items cannot be empty")
