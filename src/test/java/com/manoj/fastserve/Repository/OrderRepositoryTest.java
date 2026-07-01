@@ -1,9 +1,6 @@
 package com.manoj.fastserve.Repository;
 
-import com.manoj.fastserve.Entity.Order;
-import com.manoj.fastserve.Entity.OrderStatus;
-import com.manoj.fastserve.Entity.Role;
-import com.manoj.fastserve.Entity.User;
+import com.manoj.fastserve.Entity.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -50,7 +47,7 @@ class OrderRepositoryTest {
         order.setUser(user);
         order.setTotalPrice(500.0);
         order.setStatus(OrderStatus.PLACED);
-        order.setPaymentMode("UPI");
+        order.setPaymentMode(PaymentMode.UPI);
         order.setPaid(false);
         order.setEstimatedDeliveryTime(30);
 
