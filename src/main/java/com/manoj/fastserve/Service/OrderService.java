@@ -44,13 +44,16 @@ public class OrderService {
     // GET order by ID
     public Order getOrderById(Long id) {
 
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        User currentUser = getCurrentUser();
 
-        User user = getCurrentUser();
-        checkOwnership(order, user);
+        if (currentUser.getRole() == Role.ADMIN) {
+            return orderRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        }
 
-        return order;
+        return orderRepository.findByIdAndUserId(id, currentUser.getId())
+                .orElseThrow(() ->
+                        new UnauthorizedException("Access denied: not your order"));
     }
 
     public Order markAsPaid(Long id) {
@@ -82,20 +85,12 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public Order createOrderForUser(Long userId, CreateOrderRequest request) {
+    public Order createOrder(CreateOrderRequest request) {
 
         User currentUser = getCurrentUser();
 
-        if (currentUser.getRole() != Role.ADMIN &&
-                !currentUser.getId().equals(userId)) {
-            throw new UnauthorizedException("Access denied");
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         Order order = new Order();
-        order.setUser(user);
+        order.setUser(currentUser);
         order.setPaymentMode(request.getPaymentMode());
         order.setPaid(false);
         order.setStatus(OrderStatus.PLACED);
@@ -127,28 +122,33 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public Page<Order> getOrdersByUserId(Long userId, Pageable pageable) {
+    public Page<Order> getMyOrders(Pageable pageable) {
 
         User currentUser = getCurrentUser();
 
-        if (currentUser.getRole() != Role.ADMIN &&
-                !currentUser.getId().equals(userId)) {
-            throw new UnauthorizedException("Access denied");
-        }
-
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        return orderRepository.findByUserId(userId, pageable);
+        return orderRepository.findByUserId(
+                currentUser.getId(),
+                pageable
+        );
     }
 
     public Order cancelOrder(Long orderId) {
 
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        User currentUser = getCurrentUser();
 
-        User user = getCurrentUser();
-        checkOwnership(order, user);
+        Order order;
+
+        if (currentUser.getRole() == Role.ADMIN) {
+            order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        } else {
+            order = orderRepository.findByIdAndUserId(
+                            orderId,
+                            currentUser.getId()
+                    )
+                    .orElseThrow(() ->
+                            new UnauthorizedException("Access denied: not your order"));
+        }
 
         if (order.getStatus() == OrderStatus.DELIVERED) {
             throw new BadRequestException("Cannot cancel delivered order");
@@ -168,14 +168,5 @@ public class OrderService {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-    }
-
-    private void checkOwnership(Order order, User user) {
-        if (user.getRole() == Role.ADMIN) return;
-
-        if (order.getUser() == null ||
-                !order.getUser().getId().equals(user.getId())) {
-            throw new UnauthorizedException("Access denied: not your order");
-        }
     }
 }

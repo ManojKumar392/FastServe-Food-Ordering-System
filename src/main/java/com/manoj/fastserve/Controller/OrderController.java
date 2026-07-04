@@ -54,23 +54,22 @@ public class OrderController {
         );
     }
 
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<Order> createOrderForUser(
-            @PathVariable Long userId,
+    @PostMapping
+    public ResponseEntity<Order> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
 
         return new ResponseEntity<>(
-                orderService.createOrderForUser(userId, request),
+                orderService.createOrder(request),
                 HttpStatus.CREATED
         );
     }
 
-    @GetMapping("/users/{userId}")
-    public ResponseEntity<Page<Order>> getOrdersByUserId(
-            @PathVariable Long userId,
+    @GetMapping("/my")
+    public ResponseEntity<Page<Order>> getMyOrders(
             Pageable pageable) {
+
         return ResponseEntity.ok(
-                orderService.getOrdersByUserId(userId, pageable)
+                orderService.getMyOrders(pageable)
         );
     }
 
