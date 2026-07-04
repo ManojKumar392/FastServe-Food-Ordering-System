@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manoj.fastserve.Config.TestCacheConfig;
 import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.RefreshResponse;
+import com.manoj.fastserve.DTO.SignupRequest;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.User;
 
@@ -61,7 +62,7 @@ class UserControllerTest {
         response.setEmail("test@gmail.com");
 
 
-        when(userService.register(any(User.class)))
+        when(userService.register(any(SignupRequest.class)))
                 .thenReturn(response);
 
 

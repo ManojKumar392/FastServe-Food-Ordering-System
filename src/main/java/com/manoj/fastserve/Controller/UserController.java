@@ -18,11 +18,12 @@ public class UserController {
         this.userService = userService;
     }
 
-    // Signup
     @PostMapping("/signup")
-    public ResponseEntity<UserResponseDTO> signup(@Valid @RequestBody User user) {
+    public ResponseEntity<UserResponseDTO> signup(
+            @Valid @RequestBody SignupRequest request) {
+
         return new ResponseEntity<>(
-                userService.register(user),
+                userService.register(request),
                 HttpStatus.CREATED
         );
     }

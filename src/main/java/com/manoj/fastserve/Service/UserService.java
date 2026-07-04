@@ -2,6 +2,7 @@ package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.RefreshResponse;
+import com.manoj.fastserve.DTO.SignupRequest;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.RefreshToken;
 import com.manoj.fastserve.Entity.User;
@@ -34,13 +35,21 @@ public class UserService {
     }
 
     // Signup
-    public UserResponseDTO register(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(Role.USER);
-        if(userRepository.findByEmail(user.getEmail()).isPresent()){
+    public UserResponseDTO register(SignupRequest request) {
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new BadRequestException("Email already registered");
         }
+
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setAddress(request.getAddress());
+        user.setRole(Role.USER);
+
         User saved = userRepository.save(user);
+
         return mapToDTO(saved);
     }
 
