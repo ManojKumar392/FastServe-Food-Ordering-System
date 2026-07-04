@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(
@@ -23,87 +25,55 @@ import jakarta.persistence.Enumerated;
 )
 public class Order extends BaseEntity{
 
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
+    @Getter
     private Double totalPrice;
 
+    @Setter
+    @Getter
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Setter
+    @Getter
     @Enumerated(EnumType.STRING)
     private PaymentMode paymentMode;
 
+    @Setter
+    @Getter
     private Boolean paid;
 
+    @Setter
+    @Getter
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+
+    @Setter
+    @Getter
+    private String transactionId;
+
+    @Setter
+    @Getter
     private Integer estimatedDeliveryTime;
 
+    @Setter
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> items;
 
+    @Setter
+    @Getter
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    public Long getId() {
-        return id;
-    }
-
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public OrderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
-
-    public PaymentMode getPaymentMode() {
-        return paymentMode;
-    }
-
-    public void setPaymentMode(PaymentMode paymentMode) {
-        this.paymentMode = paymentMode;
-    }
-
-    public Boolean getPaid() {
-        return paid;
-    }
-
-    public void setPaid(Boolean paid) {
-        this.paid = paid;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Integer getEstimatedDeliveryTime() {
-        return estimatedDeliveryTime;
-    }
-
-    public void setEstimatedDeliveryTime(Integer estimatedDeliveryTime) {
-        this.estimatedDeliveryTime = estimatedDeliveryTime;
-    }
 
     @JsonManagedReference
     public List<OrderItem> getItems() {
         return items;
     }
 
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
-    }
 }

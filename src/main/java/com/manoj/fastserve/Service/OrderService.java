@@ -2,6 +2,8 @@ package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.DTO.OrderItemRequest;
+import com.manoj.fastserve.DTO.PaymentRequest;
+import com.manoj.fastserve.DTO.PaymentResponse;
 import com.manoj.fastserve.Entity.*;
 import com.manoj.fastserve.Exception.BadRequestException;
 import com.manoj.fastserve.Exception.ResourceNotFoundException;
@@ -25,15 +27,18 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
+    private final PaymentGatewayService paymentGatewayService;
 
     public OrderService(OrderRepository orderRepository,
                         OrderItemRepository orderItemRepository,
                         MenuItemRepository menuItemRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        PaymentGatewayService paymentGatewayService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.menuItemRepository = menuItemRepository;
         this.userRepository = userRepository;
+        this.paymentGatewayService = paymentGatewayService;
     }
 
     // GET all orders
@@ -94,6 +99,7 @@ public class OrderService {
         order.setPaymentMode(request.getPaymentMode());
         order.setPaid(false);
         order.setStatus(OrderStatus.PLACED);
+        order.setPaymentStatus(PaymentStatus.PENDING);
 
         double total = 0;
         List<OrderItem> savedItems = new ArrayList<>();
@@ -118,6 +124,35 @@ public class OrderService {
 
         order.setItems(savedItems);
         order.setTotalPrice(total);
+
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setOrderId(order.getId());
+        paymentRequest.setAmount(total);
+        paymentRequest.setPaymentMode(order.getPaymentMode());
+
+        PaymentResponse paymentResponse =
+                paymentGatewayService.processPayment(paymentRequest);
+
+        order.setPaymentStatus(paymentResponse.getStatus());
+        order.setTransactionId(paymentResponse.getTransactionId());
+
+        switch (paymentResponse.getStatus()) {
+
+            case SUCCESS -> {
+                order.setPaid(true);
+                order.setStatus(OrderStatus.PAID);
+            }
+
+            case FAILED -> {
+                order.setPaid(false);
+                order.setStatus(OrderStatus.PLACED);
+            }
+
+            case PENDING -> {
+                order.setPaid(false);
+                order.setStatus(OrderStatus.PLACED);
+            }
+        }
 
         return orderRepository.save(order);
     }
