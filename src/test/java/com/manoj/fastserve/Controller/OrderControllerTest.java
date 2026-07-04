@@ -1,6 +1,5 @@
 package com.manoj.fastserve.Controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manoj.fastserve.Config.TestCacheConfig;
 import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.Entity.Order;
@@ -46,9 +45,6 @@ class OrderControllerTest {
 
     @MockitoBean
     private JwtUtil jwtUtil;
-
-    private final ObjectMapper objectMapper =
-            new ObjectMapper();
 
 
 
@@ -155,36 +151,29 @@ class OrderControllerTest {
 
 
     @Test
-    void createOrderForUser_shouldCreateOrder() throws Exception {
-
+    void createOrder_shouldCreateOrder() throws Exception {
 
         Order order = new Order();
 
-
-        when(orderService.createOrderForUser(
-                eq(1L),
+        when(orderService.createOrder(
                 any(CreateOrderRequest.class)
         ))
                 .thenReturn(order);
 
-
-
         mockMvc.perform(
-                        post("/orders/user/1")
-                                .contentType(
-                                        MediaType.APPLICATION_JSON
-                                )
+                        post("/orders")
+                                .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
+                            {
+                              "paymentMode":"UPI",
+                              "items":[
                                 {
-                                  "paymentMode":"UPI",
-                                  "items":[
-                                    {
-                                      "menuItemId":1,
-                                      "quantity":2
-                                    }
-                                  ]
+                                  "menuItemId":1,
+                                  "quantity":2
                                 }
-                                """)
+                              ]
+                            }
+                            """)
                 )
                 .andExpect(status().isCreated());
 
@@ -195,25 +184,20 @@ class OrderControllerTest {
 
 
     @Test
-    void getOrdersByUserId_shouldReturnOrders() throws Exception {
-
+    void getMyOrders_shouldReturnOrders() throws Exception {
 
         Page<Order> page =
                 new PageImpl<>(
                         java.util.List.of(new Order())
                 );
 
-
-        when(orderService.getOrdersByUserId(
-                eq(1L),
+        when(orderService.getMyOrders(
                 any(Pageable.class)
         ))
                 .thenReturn(page);
 
-
-
         mockMvc.perform(
-                        get("/orders/users/1")
+                        get("/orders/my")
                 )
                 .andExpect(status().isOk());
 

@@ -70,7 +70,7 @@ class OrderServiceTest {
         admin = new User();
 
         admin.setName("Admin");
-        user.setId(1L);
+        admin.setId(2L);
         admin.setEmail("admin@test.com");
         admin.setPassword("password");
         admin.setAddress("India");
@@ -103,25 +103,15 @@ class OrderServiceTest {
 
 
     @Test
-    void createOrderForUser_success(){
+    void createOrder_success(){
 
 
         mockAuthentication(
                 user.getEmail()
         );
 
-
-        when(userRepository.findByEmail(
-                user.getEmail()
-        ))
+        when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.of(user));
-
-
-        when(userRepository.findById(
-                1L
-        ))
-                .thenReturn(Optional.of(user));
-
 
         when(menuItemRepository.findById(
                 1L
@@ -161,12 +151,7 @@ class OrderServiceTest {
 
 
         Order result =
-                orderService.createOrderForUser(
-                        1L,
-                        request
-                );
-
-
+                orderService.createOrder(request);
 
         assertEquals(
                 400,
@@ -178,100 +163,6 @@ class OrderServiceTest {
                 .save(any(Order.class));
 
     }
-
-
-
-
-    @Test
-    void createOrder_userCannotOrderForAnotherUser(){
-
-
-        mockAuthentication(
-                user.getEmail()
-        );
-
-
-        when(userRepository.findByEmail(
-                user.getEmail()
-        ))
-                .thenReturn(
-                        Optional.of(user)
-                );
-
-
-
-        assertThrows(
-                UnauthorizedException.class,
-                () ->
-                        orderService.createOrderForUser(
-                                2L,
-                                new CreateOrderRequest()
-                        )
-        );
-
-    }
-
-
-
-
-
-    @Test
-    void createOrder_adminCanOrderForAnyone(){
-
-
-        mockAuthentication(
-                admin.getEmail()
-        );
-
-
-        when(userRepository.findByEmail(
-                admin.getEmail()
-        ))
-                .thenReturn(
-                        Optional.of(admin)
-                );
-
-
-        when(userRepository.findById(
-                1L
-        ))
-                .thenReturn(
-                        Optional.of(user)
-                );
-
-
-
-        CreateOrderRequest request =
-                new CreateOrderRequest();
-
-        request.setPaymentMode(PaymentMode.UPI);
-        request.setItems(List.of());
-
-
-
-        when(orderRepository.save(
-                any(Order.class)
-        ))
-                .thenAnswer(
-                        i -> i.getArgument(0)
-                );
-
-
-
-        Order order =
-                orderService.createOrderForUser(
-                        1L,
-                        request
-                );
-
-
-        assertNotNull(order);
-
-    }
-
-
-
-
 
     @Test
     void createOrder_menuItemNotFound(){
@@ -287,9 +178,6 @@ class OrderServiceTest {
         ))
                 .thenReturn(Optional.of(user));
 
-
-        when(userRepository.findById(1L))
-                .thenReturn(Optional.of(user));
 
 
         when(menuItemRepository.findById(1L))
@@ -321,10 +209,7 @@ class OrderServiceTest {
         assertThrows(
                 RuntimeException.class,
                 () ->
-                        orderService.createOrderForUser(
-                                1L,
-                                request
-                        )
+                        orderService.createOrder(request)
         );
 
     }
@@ -350,10 +235,11 @@ class OrderServiceTest {
         );
 
 
-        when(orderRepository.findById(1L))
-                .thenReturn(
-                        Optional.of(order)
-                );
+        when(orderRepository.findByIdAndUserId(
+                1L,
+                user.getId()
+        ))
+                .thenReturn(Optional.of(order));
 
 
         when(userRepository.findByEmail(
@@ -404,10 +290,11 @@ class OrderServiceTest {
         );
 
 
-        when(orderRepository.findById(1L))
-                .thenReturn(
-                        Optional.of(order)
-                );
+        when(orderRepository.findByIdAndUserId(
+                1L,
+                user.getId()
+        ))
+                .thenReturn(Optional.empty());
 
 
         when(userRepository.findByEmail(
@@ -450,10 +337,11 @@ class OrderServiceTest {
         );
 
 
-        when(orderRepository.findById(1L))
-                .thenReturn(
-                        Optional.of(order)
-                );
+        when(orderRepository.findByIdAndUserId(
+                1L,
+                user.getId()
+        ))
+                .thenReturn(Optional.of(order));
 
 
         when(userRepository.findByEmail(
@@ -507,10 +395,11 @@ class OrderServiceTest {
 
 
 
-        when(orderRepository.findById(1L))
-                .thenReturn(
-                        Optional.of(order)
-                );
+        when(orderRepository.findByIdAndUserId(
+                1L,
+                user.getId()
+        ))
+                .thenReturn(Optional.of(order));
 
 
         when(userRepository.findByEmail(
