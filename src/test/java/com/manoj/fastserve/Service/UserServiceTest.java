@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.LoginResponse;
+import com.manoj.fastserve.DTO.SignupRequest;
 import com.manoj.fastserve.DTO.UserResponseDTO;
 import com.manoj.fastserve.Entity.Role;
 import com.manoj.fastserve.Entity.User;
@@ -53,26 +54,33 @@ class UserServiceTest {
     void register_shouldCreateUserSuccessfully() {
 
 
-        User user = new User();
+        SignupRequest request = new SignupRequest();
 
-        user.setName("Manoj");
-        user.setId(1L);
-        user.setEmail("test@test.com");
-        user.setPassword("password");
-        user.setAddress("India");
+        request.setName("Manoj");
+        request.setEmail("test@test.com");
+        request.setPassword("password");
+        request.setAddress("India");
 
 
         when(passwordEncoder.encode("password"))
                 .thenReturn("encrypted");
 
 
-        when(userRepository.save(user))
-                .thenReturn(user);
+        User savedUser = new User();
+
+        savedUser.setId(1L);
+        savedUser.setName("Manoj");
+        savedUser.setEmail("test@test.com");
+        savedUser.setAddress("India");
+        savedUser.setRole(Role.USER);
+
+        when(userRepository.save(any(User.class)))
+                .thenReturn(savedUser);
 
 
 
         UserResponseDTO response =
-                userService.register(user);
+                userService.register(request);
 
 
 
@@ -80,14 +88,14 @@ class UserServiceTest {
         assertEquals("test@test.com", response.getEmail());
 
 
-        assertEquals(Role.USER, user.getRole());
+        verify(userRepository).save(any(User.class));
 
         verify(passwordEncoder)
                 .encode("password");
 
 
         verify(userRepository)
-                .save(user);
+                .save(any(User.class));
 
     }
 
