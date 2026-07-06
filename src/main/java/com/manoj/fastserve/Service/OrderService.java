@@ -67,6 +67,18 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BadRequestException("Cancelled orders cannot be marked as paid");
+        }
+
+        if (order.getStatus() == OrderStatus.DELIVERED &&
+                order.getPaymentMode() != PaymentMode.CASH) {
+            throw new BadRequestException("Delivered online orders cannot be marked as paid");
+        }
+
+        if (Boolean.TRUE.equals(order.getPaid())) {
+            throw new BadRequestException("Order is already paid");
+        }
         order.setPaid(true);
         order.setStatus(OrderStatus.PAID);
 
@@ -83,6 +95,15 @@ public class OrderService {
 
             throw new BadRequestException(
                     "Delivered order cannot be cancelled"
+            );
+        }
+
+        if (status == OrderStatus.DELIVERED &&
+                order.getPaymentMode() != PaymentMode.CASH &&
+                !Boolean.TRUE.equals(order.getPaid())) {
+
+            throw new BadRequestException(
+                    "Unpaid online orders cannot be delivered"
             );
         }
 
