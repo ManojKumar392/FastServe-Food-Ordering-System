@@ -266,6 +266,12 @@ public class OrderService {
             );
         }
 
+        if (order.getStatus() != OrderStatus.PLACED) {
+            throw new BadRequestException(
+                    "Payment can only be retried for placed orders"
+            );
+        }
+
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setOrderId(order.getId());
         paymentRequest.setAmount(order.getTotalPrice());
@@ -275,7 +281,9 @@ public class OrderService {
                 paymentGatewayService.processPayment(paymentRequest);
 
         order.setPaymentStatus(paymentResponse.getStatus());
-        order.setTransactionId(paymentResponse.getTransactionId());
+        if (paymentResponse.getTransactionId() != null) {
+            order.setTransactionId(paymentResponse.getTransactionId());
+        }
 
         if (paymentResponse.getStatus() == PaymentStatus.SUCCESS) {
             order.setPaid(true);
