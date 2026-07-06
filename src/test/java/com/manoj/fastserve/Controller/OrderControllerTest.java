@@ -2,6 +2,7 @@ package com.manoj.fastserve.Controller;
 
 import com.manoj.fastserve.Config.TestCacheConfig;
 import com.manoj.fastserve.DTO.CreateOrderRequest;
+import com.manoj.fastserve.DTO.OrderResponseDTO;
 import com.manoj.fastserve.Entity.Order;
 import com.manoj.fastserve.Entity.OrderStatus;
 import com.manoj.fastserve.Service.OrderService;
@@ -78,11 +79,11 @@ class OrderControllerTest {
     void getOrderById_shouldReturnOrder() throws Exception {
 
 
-        Order order = new Order();
+        OrderResponseDTO response = new OrderResponseDTO();
 
 
         when(orderService.getOrderById(1L))
-                .thenReturn(order);
+                .thenReturn(response);
 
 
 
@@ -101,11 +102,11 @@ class OrderControllerTest {
     void markAsPaid_shouldReturnUpdatedOrder() throws Exception {
 
 
-        Order order = new Order();
+        OrderResponseDTO response = new OrderResponseDTO();
 
 
         when(orderService.markAsPaid(1L))
-                .thenReturn(order);
+                .thenReturn(response);
 
 
 
@@ -124,14 +125,14 @@ class OrderControllerTest {
     void updateStatus_shouldReturnUpdatedOrder() throws Exception {
 
 
-        Order order = new Order();
+        OrderResponseDTO response = new OrderResponseDTO();
 
 
         when(orderService.updateStatus(
                 eq(1L),
                 eq(OrderStatus.PAID)
         ))
-                .thenReturn(order);
+                .thenReturn(response);
 
 
 
@@ -153,12 +154,12 @@ class OrderControllerTest {
     @Test
     void createOrder_shouldCreateOrder() throws Exception {
 
-        Order order = new Order();
+        OrderResponseDTO response = new OrderResponseDTO();
 
         when(orderService.createOrder(
                 any(CreateOrderRequest.class)
         ))
-                .thenReturn(order);
+                .thenReturn(response);
 
         mockMvc.perform(
                         post("/orders")
@@ -211,11 +212,11 @@ class OrderControllerTest {
     void cancelOrder_shouldCancelOrder() throws Exception {
 
 
-        Order order = new Order();
+        OrderResponseDTO response = new OrderResponseDTO();
 
 
         when(orderService.cancelOrder(1L))
-                .thenReturn(order);
+                .thenReturn(response);
 
 
 
@@ -229,10 +230,10 @@ class OrderControllerTest {
     @Test
     void retryPayment_shouldReturnUpdatedOrder() throws Exception {
 
-        Order order = new Order();
+        OrderResponseDTO response = new OrderResponseDTO();
 
         when(orderService.retryPayment(1L))
-                .thenReturn(order);
+                .thenReturn(response);
 
         mockMvc.perform(
                         post("/orders/1/retry-payment")

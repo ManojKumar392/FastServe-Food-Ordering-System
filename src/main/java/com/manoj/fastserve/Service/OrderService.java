@@ -1,9 +1,6 @@
 package com.manoj.fastserve.Service;
 
-import com.manoj.fastserve.DTO.CreateOrderRequest;
-import com.manoj.fastserve.DTO.OrderItemRequest;
-import com.manoj.fastserve.DTO.PaymentRequest;
-import com.manoj.fastserve.DTO.PaymentResponse;
+import com.manoj.fastserve.DTO.*;
 import com.manoj.fastserve.Entity.*;
 import com.manoj.fastserve.Exception.BadRequestException;
 import com.manoj.fastserve.Exception.ResourceNotFoundException;
@@ -48,21 +45,26 @@ public class OrderService {
     }
 
     // GET order by ID
-    public Order getOrderById(Long id) {
+    public OrderResponseDTO getOrderById(Long id) {
 
         User currentUser = getCurrentUser();
 
         if (currentUser.getRole() == Role.ADMIN) {
-            return orderRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+            return mapToDTO(
+                    orderRepository.findById(id)
+                            .orElseThrow(() ->
+                                    new ResourceNotFoundException("Order not found"))
+            );
         }
 
-        return orderRepository.findByIdAndUserId(id, currentUser.getId())
-                .orElseThrow(() ->
-                        new UnauthorizedException("Access denied: not your order"));
+        return mapToDTO(
+                orderRepository.findByIdAndUserId(id, currentUser.getId())
+                        .orElseThrow(() ->
+                                new UnauthorizedException("Access denied: not your order"))
+        );
     }
 
-    public Order markAsPaid(Long id) {
+    public OrderResponseDTO markAsPaid(Long id) {
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -82,10 +84,10 @@ public class OrderService {
         order.setPaid(true);
         order.setStatus(OrderStatus.PAID);
 
-        return orderRepository.save(order);
+        return mapToDTO(orderRepository.save(order));
     }
 
-    public Order updateStatus(Long id, OrderStatus status) {
+    public OrderResponseDTO updateStatus(Long id, OrderStatus status) {
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -109,10 +111,10 @@ public class OrderService {
 
         order.setStatus(status);
 
-        return orderRepository.save(order);
+        return mapToDTO(orderRepository.save(order));
     }
 
-    public Order createOrder(CreateOrderRequest request) {
+    public OrderResponseDTO createOrder(CreateOrderRequest request) {
 
         User currentUser = getCurrentUser();
 
@@ -176,7 +178,7 @@ public class OrderService {
             }
         }
 
-        return orderRepository.save(order);
+        return mapToDTO(orderRepository.save(order));
     }
 
     public Page<Order> getMyOrders(Pageable pageable) {
@@ -189,7 +191,7 @@ public class OrderService {
         );
     }
 
-    public Order cancelOrder(Long orderId) {
+    public OrderResponseDTO cancelOrder(Long orderId) {
 
         User currentUser = getCurrentUser();
 
@@ -217,7 +219,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
 
-        return orderRepository.save(order);
+        return mapToDTO(orderRepository.save(order));
     }
 
     private User getCurrentUser() {
@@ -227,7 +229,24 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    public Order retryPayment(Long orderId) {
+    private OrderResponseDTO mapToDTO(Order order) {
+
+        OrderResponseDTO dto = new OrderResponseDTO();
+
+        dto.setId(order.getId());
+        dto.setTotalPrice(order.getTotalPrice());
+        dto.setStatus(order.getStatus());
+        dto.setPaymentMode(order.getPaymentMode());
+        dto.setPaid(order.getPaid());
+        dto.setPaymentStatus(order.getPaymentStatus());
+        dto.setTransactionId(order.getTransactionId());
+        dto.setEstimatedDeliveryTime(order.getEstimatedDeliveryTime());
+        dto.setCreatedAt(order.getCreatedAt());
+
+        return dto;
+    }
+
+    public OrderResponseDTO retryPayment(Long orderId) {
 
         User currentUser = getCurrentUser();
 
@@ -292,6 +311,6 @@ public class OrderService {
             order.setPaid(false);
         }
 
-        return orderRepository.save(order);
+        return mapToDTO(orderRepository.save(order));
     }
 }

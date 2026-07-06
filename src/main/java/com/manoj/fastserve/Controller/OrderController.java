@@ -1,6 +1,7 @@
 package com.manoj.fastserve.Controller;
 
 import com.manoj.fastserve.DTO.CreateOrderRequest;
+import com.manoj.fastserve.DTO.OrderResponseDTO;
 import com.manoj.fastserve.Entity.Order;
 import com.manoj.fastserve.Entity.OrderStatus;
 import com.manoj.fastserve.Service.OrderService;
@@ -33,19 +34,19 @@ public class OrderController {
 
     // GET one order
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDTO> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/pay")
-    public ResponseEntity<Order> markAsPaid(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDTO> markAsPaid(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.markAsPaid(id));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Order> updateStatus(
+    public ResponseEntity<OrderResponseDTO> updateStatus(
             @PathVariable Long id,
             @RequestParam OrderStatus status) {
 
@@ -55,7 +56,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(
+    public ResponseEntity<OrderResponseDTO> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
 
         return new ResponseEntity<>(
@@ -74,12 +75,12 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Order> cancelOrder(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDTO> cancelOrder(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.cancelOrder(id));
     }
 
     @PostMapping("/{id}/retry-payment")
-    public ResponseEntity<Order> retryPayment(@PathVariable Long id) {
+    public ResponseEntity<OrderResponseDTO> retryPayment(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.retryPayment(id));
     }
 }
