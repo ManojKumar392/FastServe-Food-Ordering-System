@@ -2,6 +2,7 @@ package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.DTO.OrderItemRequest;
+import com.manoj.fastserve.DTO.OrderResponseDTO;
 import com.manoj.fastserve.DTO.PaymentResponse;
 import com.manoj.fastserve.Entity.*;
 import com.manoj.fastserve.Exception.BadRequestException;
@@ -161,7 +162,7 @@ class OrderServiceTest {
                 );
 
 
-        Order result =
+        OrderResponseDTO result =
                 orderService.createOrder(request);
 
         assertEquals(
@@ -213,7 +214,7 @@ class OrderServiceTest {
 
         request.setItems(List.of(item));
 
-        Order order = orderService.createOrder(request);
+        OrderResponseDTO order = orderService.createOrder(request);
 
         assertTrue(order.getPaid());
         assertEquals(OrderStatus.PAID, order.getStatus());
@@ -308,14 +309,14 @@ class OrderServiceTest {
 
 
 
-        Order result =
+        OrderResponseDTO result =
                 orderService.getOrderById(1L);
 
 
 
         assertEquals(
                 user,
-                result.getUser()
+                result.getId()
         );
 
     }
@@ -349,7 +350,7 @@ class OrderServiceTest {
         when(orderRepository.save(any(Order.class)))
                 .thenAnswer(i -> i.getArgument(0));
 
-        Order result = orderService.retryPayment(1L);
+        OrderResponseDTO result = orderService.retryPayment(1L);
 
         assertTrue(result.getPaid());
         assertEquals(OrderStatus.PAID, result.getStatus());
@@ -471,7 +472,7 @@ class OrderServiceTest {
 
 
 
-        Order result =
+        OrderResponseDTO result =
                 orderService.cancelOrder(1L);
 
 
