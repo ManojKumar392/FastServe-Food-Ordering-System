@@ -6,7 +6,7 @@ import com.manoj.fastserve.DTO.LoginResponse;
 import com.manoj.fastserve.DTO.RefreshResponse;
 import com.manoj.fastserve.DTO.SignupRequest;
 import com.manoj.fastserve.DTO.UserResponseDTO;
-import com.manoj.fastserve.Entity.User;
+
 
 import com.manoj.fastserve.Service.UserService;
 

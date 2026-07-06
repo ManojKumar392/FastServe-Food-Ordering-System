@@ -2,6 +2,7 @@ package com.manoj.fastserve.Service;
 
 import com.manoj.fastserve.DTO.CreateOrderRequest;
 import com.manoj.fastserve.DTO.OrderItemRequest;
+import com.manoj.fastserve.DTO.PaymentResponse;
 import com.manoj.fastserve.Entity.*;
 import com.manoj.fastserve.Exception.BadRequestException;
 import com.manoj.fastserve.Exception.UnauthorizedException;
@@ -39,6 +40,9 @@ class OrderServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PaymentGatewayService paymentGatewayService;
 
 
     @InjectMocks
@@ -126,7 +130,14 @@ class OrderServiceTest {
 
         request.setPaymentMode(PaymentMode.CASH);
 
+        PaymentResponse paymentResponse = new PaymentResponse(
+                PaymentStatus.PENDING,
+                null,
+                "Cash payment"
+        );
 
+        when(paymentGatewayService.processPayment(any()))
+                .thenReturn(paymentResponse);
 
         OrderItemRequest item =
                 new OrderItemRequest();
@@ -159,9 +170,55 @@ class OrderServiceTest {
         );
 
 
+        assertEquals(PaymentStatus.PENDING, result.getPaymentStatus());
+        assertFalse(result.getPaid());
+        assertEquals(OrderStatus.PLACED, result.getStatus());
+
+
         verify(orderRepository,times(2))
                 .save(any(Order.class));
 
+    }
+
+    @Test
+    void createOrder_onlinePaymentSuccess() {
+
+        mockAuthentication(user.getEmail());
+
+        when(userRepository.findByEmail(user.getEmail()))
+                .thenReturn(Optional.of(user));
+
+        when(menuItemRepository.findById(1L))
+                .thenReturn(Optional.of(pizza));
+
+        PaymentResponse paymentResponse =
+                new PaymentResponse(
+                        PaymentStatus.SUCCESS,
+                        "TXN123",
+                        "Success"
+                );
+
+        when(paymentGatewayService.processPayment(any()))
+                .thenReturn(paymentResponse);
+
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        CreateOrderRequest request = new CreateOrderRequest();
+        request.setPaymentMode(PaymentMode.UPI);
+
+        OrderItemRequest item = new OrderItemRequest();
+        item.setMenuItemId(1L);
+        item.setQuantity(1);
+
+        request.setItems(List.of(item));
+
+        Order order = orderService.createOrder(request);
+
+        assertTrue(order.getPaid());
+        assertEquals(OrderStatus.PAID, order.getStatus());
+        assertEquals(PaymentStatus.SUCCESS, order.getPaymentStatus());
+        assertEquals("TXN123", order.getTransactionId());
     }
 
     @Test
@@ -264,7 +321,64 @@ class OrderServiceTest {
     }
 
 
+    @Test
+    void retryPayment_success() {
 
+        mockAuthentication(user.getEmail());
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(OrderStatus.PLACED);
+        order.setPaymentMode(PaymentMode.UPI);
+        order.setPaymentStatus(PaymentStatus.FAILED);
+        order.setTotalPrice(200.0);
+
+        when(userRepository.findByEmail(user.getEmail()))
+                .thenReturn(Optional.of(user));
+
+        when(orderRepository.findByIdAndUserId(1L, user.getId()))
+                .thenReturn(Optional.of(order));
+
+        when(paymentGatewayService.processPayment(any()))
+                .thenReturn(new PaymentResponse(
+                        PaymentStatus.SUCCESS,
+                        "TXN999",
+                        "Success"
+                ));
+
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        Order result = orderService.retryPayment(1L);
+
+        assertTrue(result.getPaid());
+        assertEquals(OrderStatus.PAID, result.getStatus());
+        assertEquals(PaymentStatus.SUCCESS, result.getPaymentStatus());
+    }
+
+
+    @Test
+    void retryPayment_cashOrderBlocked() {
+
+        mockAuthentication(user.getEmail());
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setPaymentMode(PaymentMode.CASH);
+        order.setPaymentStatus(PaymentStatus.PENDING);
+        order.setStatus(OrderStatus.PLACED);
+
+        when(userRepository.findByEmail(user.getEmail()))
+                .thenReturn(Optional.of(user));
+
+        when(orderRepository.findByIdAndUserId(1L, user.getId()))
+                .thenReturn(Optional.of(order));
+
+        assertThrows(
+                BadRequestException.class,
+                () -> orderService.retryPayment(1L)
+        );
+    }
 
 
     @Test

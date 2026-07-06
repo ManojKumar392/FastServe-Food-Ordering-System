@@ -226,4 +226,18 @@ class OrderControllerTest {
 
     }
 
+    @Test
+    void retryPayment_shouldReturnUpdatedOrder() throws Exception {
+
+        Order order = new Order();
+
+        when(orderService.retryPayment(1L))
+                .thenReturn(order);
+
+        mockMvc.perform(
+                        post("/orders/1/retry-payment")
+                )
+                .andExpect(status().isOk());
+    }
+
 }
