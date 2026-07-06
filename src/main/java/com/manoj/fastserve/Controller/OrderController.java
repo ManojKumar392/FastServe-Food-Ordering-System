@@ -77,4 +77,9 @@ public class OrderController {
     public ResponseEntity<Order> cancelOrder(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.cancelOrder(id));
     }
+
+    @PostMapping("/{id}/retry-payment")
+    public ResponseEntity<Order> retryPayment(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.retryPayment(id));
+    }
 }

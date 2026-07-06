@@ -29,6 +29,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final PaymentGatewayService paymentGatewayService;
 
+
     public OrderService(OrderRepository orderRepository,
                         OrderItemRepository orderItemRepository,
                         MenuItemRepository menuItemRepository,
@@ -203,5 +204,65 @@ public class OrderService {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    public Order retryPayment(Long orderId) {
+
+        User currentUser = getCurrentUser();
+
+        Order order;
+
+        if (currentUser.getRole() == Role.ADMIN) {
+            order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        } else {
+            order = orderRepository.findByIdAndUserId(orderId, currentUser.getId())
+                    .orElseThrow(() ->
+                            new UnauthorizedException("Access denied: not your order"));
+        }
+
+        if (order.getPaymentMode() == PaymentMode.CASH) {
+            throw new BadRequestException(
+                    "Cash on Delivery orders cannot be retried"
+            );
+        }
+
+        if (order.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            throw new BadRequestException(
+                    "Payment has already been completed"
+            );
+        }
+
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            throw new BadRequestException(
+                    "Cannot retry payment for a cancelled order"
+            );
+        }
+
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            throw new BadRequestException(
+                    "Cannot retry payment for a delivered order"
+            );
+        }
+
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setOrderId(order.getId());
+        paymentRequest.setAmount(order.getTotalPrice());
+        paymentRequest.setPaymentMode(order.getPaymentMode());
+
+        PaymentResponse paymentResponse =
+                paymentGatewayService.processPayment(paymentRequest);
+
+        order.setPaymentStatus(paymentResponse.getStatus());
+        order.setTransactionId(paymentResponse.getTransactionId());
+
+        if (paymentResponse.getStatus() == PaymentStatus.SUCCESS) {
+            order.setPaid(true);
+            order.setStatus(OrderStatus.PAID);
+        } else {
+            order.setPaid(false);
+        }
+
+        return orderRepository.save(order);
     }
 }
