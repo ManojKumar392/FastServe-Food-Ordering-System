@@ -28,7 +28,7 @@ public class OrderController {
     // GET all orders
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<Page<Order>> getAllOrders(Pageable pageable) {
+    public ResponseEntity<Page<OrderResponseDTO>> getAllOrders(Pageable pageable) {
         return ResponseEntity.ok(orderService.getAllOrders(pageable));
     }
 
@@ -66,8 +66,7 @@ public class OrderController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<Page<Order>> getMyOrders(
-            Pageable pageable) {
+    public ResponseEntity<Page<OrderResponseDTO>> getMyOrders(Pageable pageable) {
 
         return ResponseEntity.ok(
                 orderService.getMyOrders(pageable)

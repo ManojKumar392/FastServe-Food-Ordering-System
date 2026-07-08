@@ -24,6 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -53,10 +55,8 @@ class OrderControllerTest {
     void getAllOrders_shouldReturnOrders() throws Exception {
 
 
-        Page<Order> page =
-                new PageImpl<>(
-                        java.util.List.of(new Order())
-                );
+        Page<OrderResponseDTO> page =
+                new PageImpl<>(List.of(new OrderResponseDTO()));
 
 
         when(orderService.getAllOrders(any(Pageable.class)))
@@ -187,10 +187,8 @@ class OrderControllerTest {
     @Test
     void getMyOrders_shouldReturnOrders() throws Exception {
 
-        Page<Order> page =
-                new PageImpl<>(
-                        java.util.List.of(new Order())
-                );
+        Page<OrderResponseDTO> page =
+                new PageImpl<>(List.of(new OrderResponseDTO()));
 
         when(orderService.getMyOrders(
                 any(Pageable.class)
