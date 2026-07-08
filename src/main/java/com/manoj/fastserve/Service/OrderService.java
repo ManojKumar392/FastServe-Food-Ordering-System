@@ -40,8 +40,9 @@ public class OrderService {
     }
 
     // GET all orders
-    public Page<Order> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable);
+    public Page<OrderResponseDTO> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::mapToDTO);
     }
 
     // GET order by ID
@@ -181,14 +182,11 @@ public class OrderService {
         return mapToDTO(orderRepository.save(order));
     }
 
-    public Page<Order> getMyOrders(Pageable pageable) {
-
+    public Page<OrderResponseDTO> getMyOrders(Pageable pageable) {
         User currentUser = getCurrentUser();
 
-        return orderRepository.findByUserId(
-                currentUser.getId(),
-                pageable
-        );
+        return orderRepository.findByUserId(currentUser.getId(), pageable)
+                .map(this::mapToDTO);
     }
 
     public OrderResponseDTO cancelOrder(Long orderId) {

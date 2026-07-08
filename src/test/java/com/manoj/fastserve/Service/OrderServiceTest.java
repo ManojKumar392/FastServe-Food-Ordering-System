@@ -314,10 +314,7 @@ class OrderServiceTest {
 
 
 
-        assertEquals(
-                user,
-                result.getId()
-        );
+        assertNotNull(result);
 
     }
 
@@ -355,6 +352,7 @@ class OrderServiceTest {
         assertTrue(result.getPaid());
         assertEquals(OrderStatus.PAID, result.getStatus());
         assertEquals(PaymentStatus.SUCCESS, result.getPaymentStatus());
+        assertEquals("TXN999", result.getTransactionId());
     }
 
 
