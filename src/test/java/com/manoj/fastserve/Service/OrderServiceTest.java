@@ -174,6 +174,7 @@ class OrderServiceTest {
         assertEquals(PaymentStatus.PENDING, result.getPaymentStatus());
         assertFalse(result.getPaid());
         assertEquals(OrderStatus.PLACED, result.getStatus());
+        assertNull(result.getPaymentTime());
 
 
         verify(orderRepository,times(2))
@@ -220,6 +221,7 @@ class OrderServiceTest {
         assertEquals(OrderStatus.PAID, order.getStatus());
         assertEquals(PaymentStatus.SUCCESS, order.getPaymentStatus());
         assertEquals("TXN123", order.getTransactionId());
+        assertNotNull(order.getPaymentTime());
     }
 
     @Test
@@ -353,6 +355,7 @@ class OrderServiceTest {
         assertEquals(OrderStatus.PAID, result.getStatus());
         assertEquals(PaymentStatus.SUCCESS, result.getPaymentStatus());
         assertEquals("TXN999", result.getTransactionId());
+        assertNotNull(result.getPaymentTime());
     }
 
 
@@ -532,6 +535,30 @@ class OrderServiceTest {
 
     }
 
+    @Test
+    void markAsPaid_success() {
 
+        Order order = new Order();
+
+        order.setUser(user);
+        order.setPaid(false);
+        order.setStatus(OrderStatus.PLACED);
+        order.setPaymentMode(PaymentMode.UPI);
+
+        when(orderRepository.findById(1L))
+                .thenReturn(Optional.of(order));
+
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        OrderResponseDTO result = orderService.markAsPaid(1L);
+
+        assertTrue(result.getPaid());
+        assertEquals(OrderStatus.PAID, result.getStatus());
+        assertNotNull(result.getPaymentTime());
+
+        verify(orderRepository).findById(1L);
+        verify(orderRepository).save(order);
+    }
 
 }

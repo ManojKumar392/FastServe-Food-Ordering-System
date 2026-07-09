@@ -59,6 +59,10 @@ public class Order extends BaseEntity{
 
     @Setter
     @Getter
+    private LocalDateTime paymentTime;
+
+    @Setter
+    @Getter
     private Integer estimatedDeliveryTime;
 
     @Setter
