@@ -11,6 +11,7 @@ import com.manoj.fastserve.Repository.OrderRepository;
 import com.manoj.fastserve.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -83,6 +84,7 @@ public class OrderService {
             throw new BadRequestException("Order is already paid");
         }
         order.setPaid(true);
+        order.setPaymentTime(LocalDateTime.now());
         order.setStatus(OrderStatus.PAID);
 
         return mapToDTO(orderRepository.save(order));
@@ -166,6 +168,7 @@ public class OrderService {
             case SUCCESS -> {
                 order.setPaid(true);
                 order.setStatus(OrderStatus.PAID);
+                order.setPaymentTime(LocalDateTime.now());
             }
 
             case FAILED -> {
@@ -240,6 +243,7 @@ public class OrderService {
         dto.setTransactionId(order.getTransactionId());
         dto.setEstimatedDeliveryTime(order.getEstimatedDeliveryTime());
         dto.setCreatedAt(order.getCreatedAt());
+        dto.setPaymentTime(order.getPaymentTime());
 
         return dto;
     }
@@ -305,6 +309,7 @@ public class OrderService {
         if (paymentResponse.getStatus() == PaymentStatus.SUCCESS) {
             order.setPaid(true);
             order.setStatus(OrderStatus.PAID);
+            order.setPaymentTime(LocalDateTime.now());
         } else {
             order.setPaid(false);
         }

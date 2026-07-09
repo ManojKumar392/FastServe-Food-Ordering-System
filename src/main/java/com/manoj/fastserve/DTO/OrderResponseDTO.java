@@ -29,4 +29,6 @@ public class OrderResponseDTO {
     private Integer estimatedDeliveryTime;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime paymentTime;
 }
