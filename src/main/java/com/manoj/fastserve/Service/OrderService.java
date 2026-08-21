@@ -83,9 +83,21 @@ public class OrderService {
         if (Boolean.TRUE.equals(order.getPaid())) {
             throw new BadRequestException("Order is already paid");
         }
+
         order.setPaid(true);
         order.setPaymentTime(LocalDateTime.now());
         order.setStatus(OrderStatus.PAID);
+        order.setPaymentStatus(PaymentStatus.SUCCESS);
+
+        PaymentHistory history = new PaymentHistory();
+        history.setOrder(order);
+        history.setPaymentStatus(PaymentStatus.SUCCESS);
+        history.setPaymentMode(order.getPaymentMode());
+        history.setAmount(order.getTotalPrice());
+        history.setTransactionId(order.getTransactionId());
+        history.setMessage("Payment marked as paid by admin");
+
+        paymentHistoryRepository.save(history);
 
         return mapToDTO(orderRepository.save(order));
     }

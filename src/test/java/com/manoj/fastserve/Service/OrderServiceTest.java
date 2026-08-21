@@ -585,6 +585,7 @@ class OrderServiceTest {
         order.setPaid(false);
         order.setStatus(OrderStatus.PLACED);
         order.setPaymentMode(PaymentMode.UPI);
+        order.setTotalPrice(500.0);
 
         when(orderRepository.findById(1L))
                 .thenReturn(Optional.of(order));
@@ -596,10 +597,27 @@ class OrderServiceTest {
 
         assertTrue(result.getPaid());
         assertEquals(OrderStatus.PAID, result.getStatus());
+        assertEquals(PaymentStatus.SUCCESS, result.getPaymentStatus());
         assertNotNull(result.getPaymentTime());
 
         verify(orderRepository).findById(1L);
         verify(orderRepository).save(order);
+
+
+        ArgumentCaptor<PaymentHistory> captor =
+                ArgumentCaptor.forClass(PaymentHistory.class);
+
+        verify(paymentHistoryRepository).save(captor.capture());
+
+        PaymentHistory history = captor.getValue();
+
+        assertEquals(PaymentStatus.SUCCESS, history.getPaymentStatus());
+        assertEquals(PaymentMode.UPI, history.getPaymentMode());
+        assertEquals(order.getTotalPrice(), history.getAmount());
+        assertEquals(
+                "Payment marked as paid by admin",
+                history.getMessage()
+        );
     }
 
 }
