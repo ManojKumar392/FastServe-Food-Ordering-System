@@ -80,4 +80,7 @@ public class Order extends BaseEntity{
         return items;
     }
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<PaymentHistory> paymentHistory;
+
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,6 +42,9 @@ class OrderServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PaymentHistoryRepository paymentHistoryRepository;
 
     @Mock
     private PaymentGatewayService paymentGatewayService;
@@ -180,6 +184,18 @@ class OrderServiceTest {
         verify(orderRepository,times(2))
                 .save(any(Order.class));
 
+        ArgumentCaptor<PaymentHistory> captor =
+                ArgumentCaptor.forClass(PaymentHistory.class);
+
+        verify(paymentHistoryRepository).save(captor.capture());
+
+        PaymentHistory history = captor.getValue();
+
+        assertEquals(PaymentStatus.PENDING, history.getPaymentStatus());
+        assertEquals(PaymentMode.CASH, history.getPaymentMode());
+        assertEquals(400.0, history.getAmount());
+        assertNull(history.getTransactionId());
+        assertEquals("Cash payment", history.getMessage());
     }
 
     @Test
@@ -222,6 +238,19 @@ class OrderServiceTest {
         assertEquals(PaymentStatus.SUCCESS, order.getPaymentStatus());
         assertEquals("TXN123", order.getTransactionId());
         assertNotNull(order.getPaymentTime());
+
+        ArgumentCaptor<PaymentHistory> captor =
+                ArgumentCaptor.forClass(PaymentHistory.class);
+
+        verify(paymentHistoryRepository).save(captor.capture());
+
+        PaymentHistory history = captor.getValue();
+
+        assertEquals(PaymentStatus.SUCCESS, history.getPaymentStatus());
+        assertEquals(PaymentMode.UPI, history.getPaymentMode());
+        assertEquals(200.0, history.getAmount());
+        assertEquals("TXN123", history.getTransactionId());
+        assertEquals("Success", history.getMessage());
     }
 
     @Test
@@ -356,6 +385,18 @@ class OrderServiceTest {
         assertEquals(PaymentStatus.SUCCESS, result.getPaymentStatus());
         assertEquals("TXN999", result.getTransactionId());
         assertNotNull(result.getPaymentTime());
+        ArgumentCaptor<PaymentHistory> captor =
+                ArgumentCaptor.forClass(PaymentHistory.class);
+
+        verify(paymentHistoryRepository).save(captor.capture());
+
+        PaymentHistory history = captor.getValue();
+
+        assertEquals(PaymentStatus.SUCCESS, history.getPaymentStatus());
+        assertEquals(PaymentMode.UPI, history.getPaymentMode());
+        assertEquals(200.0, history.getAmount());
+        assertEquals("TXN999", history.getTransactionId());
+        assertEquals("Success", history.getMessage());
     }
 
 

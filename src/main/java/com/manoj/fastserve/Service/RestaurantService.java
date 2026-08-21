@@ -29,10 +29,6 @@ public class RestaurantService {
         this.menuItemRepository = menuItemRepository;
     }
 
-    @Cacheable(
-            value = "restaurants",
-            key = "#pageable.pageNumber + '-' + #pageable.pageSize"
-    )
     public Page<Restaurant> getAllRestaurants(Pageable pageable) {
         return restaurantRepository.findAllByIsDeletedFalse(pageable);
     }

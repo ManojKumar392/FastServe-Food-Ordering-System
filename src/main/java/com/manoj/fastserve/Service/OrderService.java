@@ -5,10 +5,7 @@ import com.manoj.fastserve.Entity.*;
 import com.manoj.fastserve.Exception.BadRequestException;
 import com.manoj.fastserve.Exception.ResourceNotFoundException;
 import com.manoj.fastserve.Exception.UnauthorizedException;
-import com.manoj.fastserve.Repository.MenuItemRepository;
-import com.manoj.fastserve.Repository.OrderItemRepository;
-import com.manoj.fastserve.Repository.OrderRepository;
-import com.manoj.fastserve.Repository.UserRepository;
+import com.manoj.fastserve.Repository.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,18 +23,21 @@ public class OrderService {
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
     private final PaymentGatewayService paymentGatewayService;
+    private final PaymentHistoryRepository paymentHistoryRepository;
 
 
     public OrderService(OrderRepository orderRepository,
                         OrderItemRepository orderItemRepository,
                         MenuItemRepository menuItemRepository,
                         UserRepository userRepository,
-                        PaymentGatewayService paymentGatewayService) {
+                        PaymentGatewayService paymentGatewayService,
+                        PaymentHistoryRepository paymentHistoryRepository) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.menuItemRepository = menuItemRepository;
         this.userRepository = userRepository;
         this.paymentGatewayService = paymentGatewayService;
+        this.paymentHistoryRepository = paymentHistoryRepository;
     }
 
     // GET all orders
@@ -152,13 +152,8 @@ public class OrderService {
         order.setItems(savedItems);
         order.setTotalPrice(total);
 
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setOrderId(order.getId());
-        paymentRequest.setAmount(total);
-        paymentRequest.setPaymentMode(order.getPaymentMode());
-
         PaymentResponse paymentResponse =
-                paymentGatewayService.processPayment(paymentRequest);
+                processAndRecordPayment(order, total);
 
         order.setPaymentStatus(paymentResponse.getStatus());
         order.setTransactionId(paymentResponse.getTransactionId());
@@ -293,13 +288,8 @@ public class OrderService {
             );
         }
 
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setOrderId(order.getId());
-        paymentRequest.setAmount(order.getTotalPrice());
-        paymentRequest.setPaymentMode(order.getPaymentMode());
-
         PaymentResponse paymentResponse =
-                paymentGatewayService.processPayment(paymentRequest);
+                processAndRecordPayment(order, order.getTotalPrice());
 
         order.setPaymentStatus(paymentResponse.getStatus());
         if (paymentResponse.getTransactionId() != null) {
@@ -315,5 +305,28 @@ public class OrderService {
         }
 
         return mapToDTO(orderRepository.save(order));
+    }
+
+    private PaymentResponse processAndRecordPayment(Order order, Double amount) {
+
+        PaymentRequest paymentRequest = new PaymentRequest();
+        paymentRequest.setOrderId(order.getId());
+        paymentRequest.setAmount(amount);
+        paymentRequest.setPaymentMode(order.getPaymentMode());
+
+        PaymentResponse paymentResponse =
+                paymentGatewayService.processPayment(paymentRequest);
+
+        PaymentHistory history = new PaymentHistory();
+        history.setOrder(order);
+        history.setPaymentStatus(paymentResponse.getStatus());
+        history.setPaymentMode(order.getPaymentMode());
+        history.setTransactionId(paymentResponse.getTransactionId());
+        history.setAmount(amount);
+        history.setMessage(paymentResponse.getMessage());
+
+        paymentHistoryRepository.save(history);
+
+        return paymentResponse;
     }
 }
