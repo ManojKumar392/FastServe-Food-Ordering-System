@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f3ed">
+    <title>FastServe | Food, made simple</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script type="module" src="/js/app.js"></script>
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <a class="brand" href="/" aria-label="FastServe home">
+                <span class="brand-mark" aria-hidden="true">F</span>
+                <span>fastserve<span class="brand-period">.</span></span>
+            </a>
+            <div id="session-actions" class="session-actions"></div>
+        </header>
+
+        <main id="app" class="app-content">
+            <p class="loading">Getting things ready...</p>
+        </main>
+
+        <footer class="footer">
+            <span>Good food. A little closer.</span>
+            <span>FastServe <span id="year"></span></span>
+        </footer>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

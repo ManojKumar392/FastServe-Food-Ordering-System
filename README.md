@@ -39,6 +39,8 @@ docker compose up --build
 
 The API listens on `http://localhost:8080`. Stop the containers with `Ctrl+C`; use `docker compose down` to remove the containers. PostgreSQL data is kept in the `postgres-data` volume. To delete that persisted data as well, run `docker compose down --volumes`.
 
+The starter customer frontend is available at `http://localhost:8080/`. It supports account signup/sign-in, restaurant and menu browsing, placing orders, and viewing or cancelling your own orders. Administrative and other backend API operations are not part of the frontend.
+
 ## Run locally
 
 Start PostgreSQL and Redis separately, with PostgreSQL available at `localhost:5432` and Redis at `localhost:6379`. Set `DB_PASSWORD` to the PostgreSQL password and `JWT_SECRET` to a random value of at least 32 bytes. The default configuration uses the Redis hostname `redis`; when Redis is running on the local machine, override that hostname:
@@ -62,6 +64,8 @@ On macOS or Linux, use `./mvnw spring-boot:run` after exporting the same environ
 | `SPRING_DATA_REDIS_HOST` | Redis hostname; defaults to `redis` |
 
 The Docker profile connects to the Compose services by their service names (`postgres` and `redis`). The default profile expects PostgreSQL at `localhost:5432` and uses the Redis hostname `redis`. The `dev` and `prod` profiles are present, but are not fully configured for standalone or production deployment.
+
+When running locally, open `http://localhost:8080/` after starting the application to use the frontend.
 
 ## API overview
 
