@@ -49,6 +49,9 @@ class OrderServiceTest {
     @Mock
     private PaymentGatewayService paymentGatewayService;
 
+    @Mock
+    private EmailNotificationService emailNotificationService;
+
 
     @InjectMocks
     private OrderService orderService;
@@ -183,6 +186,8 @@ class OrderServiceTest {
 
         verify(orderRepository,times(2))
                 .save(any(Order.class));
+        verify(emailNotificationService).sendOrderPlaced(any(Order.class));
+        verify(emailNotificationService).sendPaymentResult(any(Order.class));
 
         ArgumentCaptor<PaymentHistory> captor =
                 ArgumentCaptor.forClass(PaymentHistory.class);
@@ -238,6 +243,8 @@ class OrderServiceTest {
         assertEquals(PaymentStatus.SUCCESS, order.getPaymentStatus());
         assertEquals("TXN123", order.getTransactionId());
         assertNotNull(order.getPaymentTime());
+        verify(emailNotificationService).sendOrderPlaced(any(Order.class));
+        verify(emailNotificationService).sendPaymentResult(any(Order.class));
 
         ArgumentCaptor<PaymentHistory> captor =
                 ArgumentCaptor.forClass(PaymentHistory.class);
@@ -523,6 +530,7 @@ class OrderServiceTest {
                 OrderStatus.CANCELLED,
                 result.getStatus()
         );
+        verify(emailNotificationService).sendOrderStatusChanged(order);
 
     }
 

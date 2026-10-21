@@ -21,17 +21,20 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
+    private final EmailNotificationService emailNotificationService;
 
     public UserService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
-            RefreshTokenService refreshTokenService
+            RefreshTokenService refreshTokenService,
+            EmailNotificationService emailNotificationService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.refreshTokenService = refreshTokenService;
+        this.emailNotificationService = emailNotificationService;
     }
 
     // Signup
@@ -49,6 +52,7 @@ public class UserService {
         user.setRole(Role.USER);
 
         User saved = userRepository.save(user);
+        emailNotificationService.sendWelcome(saved);
 
         return mapToDTO(saved);
     }
@@ -138,4 +142,3 @@ public class UserService {
         refreshTokenService.deleteRefreshToken(refreshToken);
     }
 }
-

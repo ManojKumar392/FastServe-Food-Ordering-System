@@ -24,6 +24,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final PaymentGatewayService paymentGatewayService;
     private final PaymentHistoryRepository paymentHistoryRepository;
+    private final EmailNotificationService emailNotificationService;
 
 
     public OrderService(OrderRepository orderRepository,
@@ -31,13 +32,15 @@ public class OrderService {
                         MenuItemRepository menuItemRepository,
                         UserRepository userRepository,
                         PaymentGatewayService paymentGatewayService,
-                        PaymentHistoryRepository paymentHistoryRepository) {
+                        PaymentHistoryRepository paymentHistoryRepository,
+                        EmailNotificationService emailNotificationService) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.menuItemRepository = menuItemRepository;
         this.userRepository = userRepository;
         this.paymentGatewayService = paymentGatewayService;
         this.paymentHistoryRepository = paymentHistoryRepository;
+        this.emailNotificationService = emailNotificationService;
     }
 
     // GET all orders
@@ -99,7 +102,10 @@ public class OrderService {
 
         paymentHistoryRepository.save(history);
 
-        return mapToDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        emailNotificationService.sendPaymentResult(savedOrder);
+        emailNotificationService.sendOrderStatusChanged(savedOrder);
+        return mapToDTO(savedOrder);
     }
 
     public OrderResponseDTO updateStatus(Long id, OrderStatus status) {
@@ -124,9 +130,14 @@ public class OrderService {
             );
         }
 
+        OrderStatus previousStatus = order.getStatus();
         order.setStatus(status);
 
-        return mapToDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        if (previousStatus != status) {
+            emailNotificationService.sendOrderStatusChanged(savedOrder);
+        }
+        return mapToDTO(savedOrder);
     }
 
     public OrderResponseDTO createOrder(CreateOrderRequest request) {
@@ -189,7 +200,10 @@ public class OrderService {
             }
         }
 
-        return mapToDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        emailNotificationService.sendOrderPlaced(savedOrder);
+        emailNotificationService.sendPaymentResult(savedOrder);
+        return mapToDTO(savedOrder);
     }
 
     public Page<OrderResponseDTO> getMyOrders(Pageable pageable) {
@@ -227,7 +241,9 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
 
-        return mapToDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        emailNotificationService.sendOrderStatusChanged(savedOrder);
+        return mapToDTO(savedOrder);
     }
 
     private User getCurrentUser() {
@@ -316,7 +332,12 @@ public class OrderService {
             order.setPaid(false);
         }
 
-        return mapToDTO(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        emailNotificationService.sendPaymentResult(savedOrder);
+        if (savedOrder.getStatus() == OrderStatus.PAID) {
+            emailNotificationService.sendOrderStatusChanged(savedOrder);
+        }
+        return mapToDTO(savedOrder);
     }
 
     private PaymentResponse processAndRecordPayment(Order order, Double amount) {

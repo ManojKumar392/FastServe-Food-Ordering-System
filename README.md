@@ -41,6 +41,23 @@ The API listens on `http://localhost:8080`. Stop the containers with `Ctrl+C`; u
 
 The starter customer frontend is available at `http://localhost:8080/`. It supports account signup/sign-in, restaurant and menu browsing, placing orders, and viewing or cancelling your own orders. Administrative and other backend API operations are not part of the frontend.
 
+### Email notifications
+
+FastServe can send a welcome email at signup, order-received and payment-result emails, and order status updates. Notifications are disabled by default. To enable them, configure an SMTP account using environment variables; this keeps the application independent of a particular email vendor. Free SMTP plans and sending limits depend on the provider. For example, a personal Gmail account can use an app password when 2-Step Verification is enabled; do not use your regular account password.
+
+For Docker Compose, add these values to your local `.env` file:
+
+```dotenv
+FASTSERVE_EMAIL_ENABLED=true
+FASTSERVE_EMAIL_FROM=your-verified-sender@example.com
+SPRING_MAIL_HOST=smtp.example.com
+SPRING_MAIL_PORT=587
+SPRING_MAIL_USERNAME=your-smtp-username
+SPRING_MAIL_PASSWORD=your-smtp-password
+```
+
+The SMTP host, username, and password must be supplied by your chosen provider. Keep credentials private and never commit them. Restart the application after changing the mail settings. SMTP delivery failures are logged and do not undo a signup or order.
+
 ## Run locally
 
 Start PostgreSQL and Redis separately, with PostgreSQL available at `localhost:5432` and Redis at `localhost:6379`. Set `DB_PASSWORD` to the PostgreSQL password and `JWT_SECRET` to a random value of at least 32 bytes. The default configuration uses the Redis hostname `redis`; when Redis is running on the local machine, override that hostname:
@@ -62,6 +79,12 @@ On macOS or Linux, use `./mvnw spring-boot:run` after exporting the same environ
 | `JWT_SECRET` | HMAC key used to sign access and refresh tokens; use a random secret of at least 32 bytes |
 | `SPRING_PROFILES_ACTIVE` | Selects a Spring profile; Docker Compose uses `docker` |
 | `SPRING_DATA_REDIS_HOST` | Redis hostname; defaults to `redis` |
+| `FASTSERVE_EMAIL_ENABLED` | Set to `true` to send email notifications; defaults to `false` |
+| `FASTSERVE_EMAIL_FROM` | Verified sender address; defaults to `SPRING_MAIL_USERNAME` |
+| `SPRING_MAIL_HOST` | SMTP server hostname |
+| `SPRING_MAIL_PORT` | SMTP server port; defaults to `587` in Docker Compose |
+| `SPRING_MAIL_USERNAME` | SMTP account username |
+| `SPRING_MAIL_PASSWORD` | SMTP account password or provider-issued app password |
 
 The Docker profile connects to the Compose services by their service names (`postgres` and `redis`). The default profile expects PostgreSQL at `localhost:5432` and uses the Redis hostname `redis`. The `dev` and `prod` profiles are present, but are not fully configured for standalone or production deployment.
 

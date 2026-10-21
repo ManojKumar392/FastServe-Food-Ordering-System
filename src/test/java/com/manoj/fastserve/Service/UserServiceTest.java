@@ -44,6 +44,9 @@ class UserServiceTest {
     @Mock
     private RefreshTokenService refreshTokenService;
 
+    @Mock
+    private EmailNotificationService emailNotificationService;
+
 
     @InjectMocks
     private UserService userService;
@@ -93,6 +96,7 @@ class UserServiceTest {
         verify(passwordEncoder)
                 .encode("password");
 
+        verify(emailNotificationService).sendWelcome(savedUser);
 
         verify(userRepository)
                 .save(any(User.class));
@@ -225,5 +229,3 @@ class UserServiceTest {
 
 
 }
-
-
