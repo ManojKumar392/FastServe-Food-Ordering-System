@@ -49,6 +49,7 @@ public class SecurityConfig {
                                 "/users/login",
                                 "/users/refresh",
                                 "/users/logout",
+                                "/ws",
                                 "/",
                                 "/index.html",
                                 "/css/**",

@@ -25,6 +25,7 @@ public class OrderService {
     private final PaymentGatewayService paymentGatewayService;
     private final PaymentHistoryRepository paymentHistoryRepository;
     private final EmailNotificationService emailNotificationService;
+    private final OrderUpdatePublisher orderUpdatePublisher;
 
 
     public OrderService(OrderRepository orderRepository,
@@ -33,7 +34,8 @@ public class OrderService {
                         UserRepository userRepository,
                         PaymentGatewayService paymentGatewayService,
                         PaymentHistoryRepository paymentHistoryRepository,
-                        EmailNotificationService emailNotificationService) {
+                        EmailNotificationService emailNotificationService,
+                        OrderUpdatePublisher orderUpdatePublisher) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.menuItemRepository = menuItemRepository;
@@ -41,6 +43,7 @@ public class OrderService {
         this.paymentGatewayService = paymentGatewayService;
         this.paymentHistoryRepository = paymentHistoryRepository;
         this.emailNotificationService = emailNotificationService;
+        this.orderUpdatePublisher = orderUpdatePublisher;
     }
 
     // GET all orders
@@ -105,6 +108,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         emailNotificationService.sendPaymentResult(savedOrder);
         emailNotificationService.sendOrderStatusChanged(savedOrder);
+        orderUpdatePublisher.publish(savedOrder);
         return mapToDTO(savedOrder);
     }
 
@@ -136,6 +140,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         if (previousStatus != status) {
             emailNotificationService.sendOrderStatusChanged(savedOrder);
+            orderUpdatePublisher.publish(savedOrder);
         }
         return mapToDTO(savedOrder);
     }
@@ -203,6 +208,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         emailNotificationService.sendOrderPlaced(savedOrder);
         emailNotificationService.sendPaymentResult(savedOrder);
+        orderUpdatePublisher.publish(savedOrder);
         return mapToDTO(savedOrder);
     }
 
@@ -243,6 +249,7 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
         emailNotificationService.sendOrderStatusChanged(savedOrder);
+        orderUpdatePublisher.publish(savedOrder);
         return mapToDTO(savedOrder);
     }
 
@@ -337,6 +344,7 @@ public class OrderService {
         if (savedOrder.getStatus() == OrderStatus.PAID) {
             emailNotificationService.sendOrderStatusChanged(savedOrder);
         }
+        orderUpdatePublisher.publish(savedOrder);
         return mapToDTO(savedOrder);
     }
 

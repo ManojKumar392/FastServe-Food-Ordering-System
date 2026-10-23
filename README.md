@@ -12,6 +12,7 @@ FastServe is a REST API for a food-ordering service, built with Spring Boot and 
 - Payment history and review/rating endpoints
 - PostgreSQL persistence, Redis-backed caching, and login rate limiting
 - OpenAPI documentation through Swagger UI
+- Authenticated STOMP/WebSocket order status updates
 
 ## Requirements
 
@@ -40,6 +41,10 @@ docker compose up --build
 The API listens on `http://localhost:8080`. Stop the containers with `Ctrl+C`; use `docker compose down` to remove the containers. PostgreSQL data is kept in the `postgres-data` volume. To delete that persisted data as well, run `docker compose down --volumes`.
 
 The starter customer frontend is available at `http://localhost:8080/`. It supports account signup/sign-in, restaurant and menu browsing, placing orders, and viewing or cancelling your own orders. Administrative and other backend API operations are not part of the frontend.
+
+### Live order tracking
+
+The customer order screen subscribes to authenticated STOMP updates over `/ws` and refreshes order status in real time. Clients must connect with their access token in the STOMP `Authorization: Bearer ...` header and subscribe to `/user/queue/orders`; only that user-specific subscription is permitted. Updates are sent for order placement, payment results, cancellations, and status changes. The current backend tracks order workflow status, not driver GPS location.
 
 ### Email notifications
 

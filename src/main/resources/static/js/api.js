@@ -30,6 +30,10 @@ export function hasSession() {
     return Boolean(readToken(ACCESS_TOKEN_KEY));
 }
 
+export function getAccessToken() {
+    return readToken(ACCESS_TOKEN_KEY);
+}
+
 export function getSavedUser() {
     const name = readToken(USER_NAME_KEY);
     return name ? { name } : null;

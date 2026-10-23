@@ -52,6 +52,9 @@ class OrderServiceTest {
     @Mock
     private EmailNotificationService emailNotificationService;
 
+    @Mock
+    private OrderUpdatePublisher orderUpdatePublisher;
+
 
     @InjectMocks
     private OrderService orderService;
@@ -188,6 +191,7 @@ class OrderServiceTest {
                 .save(any(Order.class));
         verify(emailNotificationService).sendOrderPlaced(any(Order.class));
         verify(emailNotificationService).sendPaymentResult(any(Order.class));
+        verify(orderUpdatePublisher).publish(any(Order.class));
 
         ArgumentCaptor<PaymentHistory> captor =
                 ArgumentCaptor.forClass(PaymentHistory.class);
@@ -531,6 +535,7 @@ class OrderServiceTest {
                 result.getStatus()
         );
         verify(emailNotificationService).sendOrderStatusChanged(order);
+        verify(orderUpdatePublisher).publish(order);
 
     }
 

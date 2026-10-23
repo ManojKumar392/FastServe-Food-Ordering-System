@@ -1,4 +1,5 @@
-import { api, clearSession, getSavedUser, hasSession, saveSession } from "./api.js";
+import { api, clearSession, getAccessToken, getSavedUser, hasSession, saveSession } from "./api.js";
+import { LiveOrderSubscription } from "./live-orders.js";
 
 const app = document.querySelector("#app");
 const sessionActions = document.querySelector("#session-actions");
@@ -11,8 +12,22 @@ const state = {
     menu: [],
     cart: new Map(),
     view: "restaurants",
-    authMode: "login"
+    authMode: "login",
+    liveConnected: false
 };
+
+const liveOrders = new LiveOrderSubscription({
+    getToken: getAccessToken,
+    onUpdate: handleOrderUpdate,
+    onConnectionChange(connected) {
+        state.liveConnected = connected;
+        const indicator = document.querySelector("#live-status");
+        if (indicator) {
+            indicator.classList.toggle("live-connected", connected);
+            indicator.innerHTML = `<span></span>${connected ? "Live updates on" : "Connecting to live updates..."}`;
+        }
+    }
+});
 
 document.querySelector("#year").textContent = new Date().getFullYear();
 render();
@@ -176,7 +191,8 @@ function renderCart() {
 
 function renderOrders() {
     return `<section class="orders-section">
-        <div class="section-heading"><div><h2>Your recent orders</h2><p>Everything you've ordered, all in one place</p></div>
+        <div class="section-heading"><div><h2>Your recent orders</h2><p>Everything you've ordered, all in one place</p>
+            <span id="live-status" class="live-indicator ${state.liveConnected ? "live-connected" : ""}"><span></span>${state.liveConnected ? "Live updates on" : "Connecting to live updates..."}</span></div>
             <button class="button button-outline" type="button" data-action="refresh-orders">Refresh</button>
         </div>
         <div id="orders-list" class="orders-list"><p class="loading">Loading your orders...</p></div>
@@ -235,11 +251,31 @@ async function loadOrders() {
                     <div class="order-total"><strong>${formatPrice(order.totalPrice)}</strong>
                         ${canCancel ? `<button class="text-button" type="button" data-action="cancel-order" data-id="${escapeHtml(order.id)}">Cancel order</button>` : ""}
                     </div>
+                    ${renderTrackingProgress(order.status)}
                 </article>`;
         }).join("") : `<p class="empty-state">No orders yet. Your next favorite is out there.</p>`;
     } catch (error) {
         list.innerHTML = `<p class="empty-state">${escapeHtml(error.message)}</p>`;
     }
+}
+
+function renderTrackingProgress(status) {
+    if (status === "CANCELLED") {
+        return `<div class="tracking-cancelled">This order was cancelled.</div>`;
+    }
+    const stages = ["PLACED", "PAID", "PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
+    const currentIndex = stages.indexOf(status);
+    return `<div class="tracking-progress" aria-label="Order progress">
+        ${stages.map((stage, index) => `
+            <div class="tracking-stage ${index < currentIndex ? "stage-complete" : ""} ${index === currentIndex ? "stage-current" : ""}">
+                <span class="tracking-dot"></span><small>${stage.replaceAll("_", " ")}</small>
+            </div>`).join("")}
+    </div>`;
+}
+
+function handleOrderUpdate(order) {
+    showToast(`Order #${order.id} updated: ${String(order.status || "").replaceAll("_", " ").toLowerCase()}.`);
+    if (state.view === "orders") loadOrders();
 }
 
 app.addEventListener("click", async (event) => {
@@ -308,6 +344,7 @@ app.addEventListener("submit", async (event) => {
         const session = await api.login(email, password);
         saveSession(session);
         state.user = session;
+        liveOrders.connect();
         state.view = "restaurants";
         render();
         await loadRestaurants();
@@ -347,6 +384,7 @@ async function cancelOrder(id) {
 }
 
 async function signOut() {
+    liveOrders.disconnect();
     const logoutRequest = api.logout();
     clearSession();
     state.user = null;
@@ -363,6 +401,7 @@ async function signOut() {
 
 if (hasSession()) {
     render();
+    liveOrders.connect();
     loadRestaurants();
 } else {
     renderAuth();
