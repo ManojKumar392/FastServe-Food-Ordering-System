@@ -1,4 +1,4 @@
-import { api, clearSession, getAccessToken, getSavedUser, hasSession, saveSession } from "./api.js";
+import { api, clearSession, getAccessToken, getSavedUser, hasSession, isAdminSession, saveSession } from "./api.js";
 import { LiveOrderSubscription } from "./live-orders.js";
 
 const app = document.querySelector("#app");
@@ -107,9 +107,36 @@ function renderDashboard() {
             <div class="dashboard-tabs" role="tablist" aria-label="FastServe">
                 <button class="${state.view === "restaurants" ? "active" : ""}" data-action="view" data-view="restaurants" type="button">Restaurants</button>
                 <button class="${state.view === "orders" ? "active" : ""}" data-action="view" data-view="orders" type="button">Your orders</button>
+                ${isAdminSession() ? `<button class="${state.view === "admin-import" ? "active" : ""}" data-action="view" data-view="admin-import" type="button">Bulk import</button>` : ""}
             </div>
         </section>
-        ${state.view === "restaurants" ? renderRestaurants() : renderOrders()}`;
+        ${state.view === "restaurants" ? renderRestaurants() : state.view === "orders" ? renderOrders() : renderAdminImport()}`;
+}
+
+function renderAdminImport() {
+    if (!isAdminSession()) {
+        state.view = "restaurants";
+        return renderRestaurants();
+    }
+    return `
+        <section class="import-section">
+            <div class="section-heading"><div><h2>Import restaurants and menu items</h2>
+                <p>Upload one CSV row per menu item. Matching restaurants are reused by name and location.</p></div></div>
+            <div class="import-card">
+                <div class="import-format">
+                    <p class="eyebrow">CSV FORMAT</p>
+                    <code>restaurantName,restaurantLocation,itemName,price</code>
+                    <p>Quote values containing commas. Use a positive price, for example <code>12.50</code>.</p>
+                    <button class="button button-outline" type="button" data-action="download-template">Download CSV template</button>
+                </div>
+                <form id="import-form" class="import-form">
+                    <label for="csv-file">Choose a CSV file</label>
+                    <input id="csv-file" name="file" type="file" accept=".csv,text/csv" required>
+                    <button class="button button-primary" type="submit">Import menu data</button>
+                </form>
+                <div id="import-result" class="import-result" aria-live="polite"></div>
+            </div>
+        </section>`;
 }
 
 function renderRestaurants() {
@@ -290,6 +317,7 @@ app.addEventListener("click", async (event) => {
         state.view = button.dataset.view;
         render();
         if (state.view === "orders") await loadOrders();
+        if (state.view === "restaurants") await loadRestaurants();
     } else if (action === "menu") {
         await loadMenu(id);
     } else if (action === "close-menu") {
@@ -315,6 +343,8 @@ app.addEventListener("click", async (event) => {
         await cancelOrder(id);
     } else if (action === "refresh-orders") {
         await loadOrders();
+    } else if (action === "download-template") {
+        downloadCsvTemplate();
     } else if (action === "logout") {
         await signOut();
     }
@@ -325,7 +355,24 @@ sessionActions.addEventListener("click", async (event) => {
     if (button) await signOut();
 });
 
+function downloadCsvTemplate() {
+    const csv = "restaurantName,restaurantLocation,itemName,price\r\n"
+        + "Green Garden,Central Market,Paneer Bowl,240.00\r\n"
+        + "Green Garden,Central Market,\"Fresh Lime, Mint\",80.00\r\n";
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "fastserve-menu-template.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
 app.addEventListener("submit", async (event) => {
+    if (event.target.id === "import-form") {
+        event.preventDefault();
+        await importMenuData(event.target);
+        return;
+    }
     if (event.target.id !== "auth-form") return;
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -353,6 +400,26 @@ app.addEventListener("submit", async (event) => {
         showToast(error.message, true);
     }
 });
+
+async function importMenuData(form) {
+    const file = new FormData(form).get("file");
+    if (!(file instanceof File) || file.size === 0) {
+        showToast("Choose a non-empty CSV file.", true);
+        return;
+    }
+    const result = document.querySelector("#import-result");
+    result.textContent = "Validating and importing CSV...";
+    try {
+        const summary = await api.importMenuCsv(file);
+        result.innerHTML = `<p class="import-success">Imported ${summary.menuItemsCreated} menu items and created ${summary.restaurantsCreated} restaurants.</p>`;
+        form.reset();
+        state.restaurants = [];
+        showToast("CSV import completed.");
+    } catch (error) {
+        result.innerHTML = `<p class="import-error">${escapeHtml(error.message)}</p>`;
+        showToast(error.message, true);
+    }
+}
 
 async function placeOrder() {
     if (!state.cart.size) return;

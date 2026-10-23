@@ -34,6 +34,21 @@ export function getAccessToken() {
     return readToken(ACCESS_TOKEN_KEY);
 }
 
+export function isAdminSession() {
+    const token = getAccessToken();
+    if (!token) return false;
+    try {
+        const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const binary = atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, "="));
+        const decoded = new TextDecoder().decode(
+            Uint8Array.from(binary, (character) => character.charCodeAt(0))
+        );
+        return JSON.parse(decoded).role === "ADMIN";
+    } catch {
+        return false;
+    }
+}
+
 export function getSavedUser() {
     const name = readToken(USER_NAME_KEY);
     return name ? { name } : null;
@@ -53,6 +68,10 @@ async function parseResponse(response) {
 function errorMessage(body, status) {
     if (body && typeof body === "object") {
         if (body.message) return body.message;
+        if (Array.isArray(body.errors)) return body.errors.join("\n");
+        if (body.messages && typeof body.messages === "object") {
+            return Object.values(body.messages).join("\n");
+        }
         if (body.error) return body.error;
     }
     return typeof body === "string" && body ? body : `Request failed (${status})`;
@@ -81,7 +100,9 @@ async function request(path, options = {}, retry = true) {
     const headers = new Headers(options.headers || {});
     const accessToken = readToken(ACCESS_TOKEN_KEY);
     if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
-    if (options.body) headers.set("Content-Type", "application/json");
+    if (options.body && !(options.body instanceof FormData)) {
+        headers.set("Content-Type", "application/json");
+    }
 
     const response = await fetch(path, { ...options, headers });
     if (response.status === 401 && retry && !path.startsWith("/users/")) {
@@ -134,6 +155,14 @@ export const api = {
     cancelOrder(id) {
         return request(`/orders/${encodeURIComponent(id)}/cancel`, {
             method: "PATCH"
+        });
+    },
+    importMenuCsv(file) {
+        const body = new FormData();
+        body.append("file", file);
+        return request("/admin/import/menu-csv", {
+            method: "POST",
+            body
         });
     }
 };

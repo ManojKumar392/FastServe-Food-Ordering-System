@@ -46,6 +46,10 @@ The starter customer frontend is available at `http://localhost:8080/`. It suppo
 
 The customer order screen subscribes to authenticated STOMP updates over `/ws` and refreshes order status in real time. Clients must connect with their access token in the STOMP `Authorization: Bearer ...` header and subscribe to `/user/queue/orders`; only that user-specific subscription is permitted. Updates are sent for order placement, payment results, cancellations, and status changes. The current backend tracks order workflow status, not driver GPS location.
 
+### Bulk restaurant and menu import
+
+Admins can select **Bulk import** in the app and upload a CSV with one row per menu item. The required headers are `restaurantName,restaurantLocation,itemName,price`; the page can download a template. A ready-to-upload, fictional demo dataset is included at `sample-data/fastserve-demo-menu.csv`. Matching active restaurants are reused by case-insensitive name and location, and missing restaurants are created. The whole file is validated before writes; invalid rows reject the import without partially importing data. Uploads are limited to 2 MB and 10,000 rows. The backend endpoint is `POST /admin/import/menu-csv` and requires an `ADMIN` access token.
+
 ### Email notifications
 
 FastServe can send a welcome email at signup, order-received and payment-result emails, and order status updates. Notifications are disabled by default. To enable them, configure an SMTP account using environment variables; this keeps the application independent of a particular email vendor. Free SMTP plans and sending limits depend on the provider. For example, a personal Gmail account can use an app password when 2-Step Verification is enabled; do not use your regular account password.

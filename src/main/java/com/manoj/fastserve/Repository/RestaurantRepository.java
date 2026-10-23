@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, JpaSpecificationExecutor<Restaurant> {
 
@@ -22,6 +23,11 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
     );
 
     Optional<Restaurant> findByIdAndIsDeletedFalse(Long id);
+
+    List<Restaurant> findAllByNameIgnoreCaseAndLocationIgnoreCaseAndIsDeletedFalse(
+            String name,
+            String location
+    );
 
     @EntityGraph(attributePaths = {"menuItems"})
     Page<Restaurant> findAllByIsDeletedFalse(Pageable pageable);
