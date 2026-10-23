@@ -33,6 +33,11 @@ public class RestaurantService {
         return restaurantRepository.findAllByIsDeletedFalse(pageable);
     }
 
+    public Restaurant getRestaurantById(Long id) {
+        return restaurantRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+    }
+
     @Cacheable(value = "restaurantMenu", key = "#restaurantId")
     public List<MenuItem> getMenuByRestaurant(Long restaurantId) {
 
@@ -148,4 +153,3 @@ public class RestaurantService {
         return restaurantRepository.save(restaurant);
     }
 }
-

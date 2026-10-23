@@ -1,5 +1,6 @@
 package com.manoj.fastserve.Entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,5 +43,9 @@ public class MenuItem extends BaseEntity{
     @JoinColumn(name = "restaurant_id")
     @JsonBackReference
     private Restaurant restaurant;
-}
 
+    @JsonProperty("restaurantId")
+    public Long getRestaurantId() {
+        return restaurant == null ? null : restaurant.getId();
+    }
+}

@@ -98,6 +98,9 @@ class RestaurantControllerTest {
 
         item.setName("Burger");
         item.setPrice(100.0);
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(1L);
+        item.setRestaurant(restaurant);
 
 
 
@@ -113,8 +116,24 @@ class RestaurantControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name")
-                        .value("Burger"));
+                        .value("Burger"))
+                .andExpect(jsonPath("$[0].restaurantId")
+                        .value(1));
 
+    }
+
+    @Test
+    void getRestaurant_shouldReturnRestaurantDetails() throws Exception {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Green Garden");
+        restaurant.setLocation("Central Market");
+
+        when(restaurantService.getRestaurantById(1L)).thenReturn(restaurant);
+
+        mockMvc.perform(get("/restaurants/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Green Garden"))
+                .andExpect(jsonPath("$.location").value("Central Market"));
     }
 
 

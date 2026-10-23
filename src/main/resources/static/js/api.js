@@ -143,6 +143,17 @@ export const api = {
     restaurantMenu(id) {
         return request(`/restaurants/${encodeURIComponent(id)}/menu`);
     },
+    restaurant(id) {
+        return request(`/restaurants/${encodeURIComponent(id)}`);
+    },
+    searchRestaurants(query, field = "name") {
+        const params = new URLSearchParams({ [field]: query });
+        return request(`/restaurants/search?${params}`);
+    },
+    searchMenu(query) {
+        const params = new URLSearchParams({ name: query, page: "0", size: "24" });
+        return request(`/menu/search?${params}`);
+    },
     createOrder(paymentMode, items) {
         return request("/orders", {
             method: "POST",

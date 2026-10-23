@@ -42,6 +42,8 @@ The API listens on `http://localhost:8080`. Stop the containers with `Ctrl+C`; u
 
 The starter customer frontend is available at `http://localhost:8080/`. It supports account signup/sign-in, restaurant and menu browsing, placing orders, and viewing or cancelling your own orders. Administrative and other backend API operations are not part of the frontend.
 
+The restaurant page includes a live search for restaurant names, locations, and menu item names. Search results use the restaurant and menu search APIs; select a restaurant or menu match to open its menu.
+
 ### Live order tracking
 
 The customer order screen subscribes to authenticated STOMP updates over `/ws` and refreshes order status in real time. Clients must connect with their access token in the STOMP `Authorization: Bearer ...` header and subscribe to `/user/queue/orders`; only that user-specific subscription is permitted. Updates are sent for order placement, payment results, cancellations, and status changes. The current backend tracks order workflow status, not driver GPS location.

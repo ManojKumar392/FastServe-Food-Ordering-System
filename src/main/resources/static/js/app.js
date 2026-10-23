@@ -13,7 +13,12 @@ const state = {
     cart: new Map(),
     view: "restaurants",
     authMode: "login",
-    liveConnected: false
+    liveConnected: false,
+    searchQuery: "",
+    searchResults: null,
+    searchLoading: false,
+    searchSequence: 0,
+    searchTimer: null
 };
 
 const liveOrders = new LiveOrderSubscription({
@@ -140,19 +145,9 @@ function renderAdminImport() {
 }
 
 function renderRestaurants() {
-    const restaurants = state.restaurants.length
-        ? state.restaurants.map((restaurant, index) => `
-            <article class="restaurant-card">
-                <div class="restaurant-art art-${index % 4}" aria-hidden="true">
-                    <span>${escapeHtml(restaurant.name?.slice(0, 1) || "F")}</span>
-                    <span class="art-sparkle">✳</span>
-                </div>
-                <div class="restaurant-info">
-                    <div><h2>${escapeHtml(restaurant.name)}</h2><p>${escapeHtml(restaurant.location)}</p></div>
-                    <button class="button button-outline" type="button" data-action="menu" data-id="${escapeHtml(restaurant.id)}">View menu <span aria-hidden="true">→</span></button>
-                </div>
-            </article>`).join("")
-        : `<p class="empty-state">No restaurants to show just yet. Check back soon.</p>`;
+    const restaurants = state.searchQuery.trim()
+        ? renderSearchResults()
+        : renderRestaurantCards(state.restaurants);
 
     const selected = state.selectedRestaurant
         ? renderMenu(state.selectedRestaurant)
@@ -161,11 +156,62 @@ function renderRestaurants() {
     return `
         <div class="food-layout">
             <section class="restaurant-section" aria-label="Restaurants">
-                <div class="section-heading"><div><h2>Local favorites</h2><p>Pick a spot to see its menu</p></div></div>
-                <div class="restaurant-grid">${restaurants}</div>
+                <div class="section-heading"><div><h2>Local favorites</h2><p>Search restaurants, locations, and dishes</p></div></div>
+                <label class="search-box">
+                    <span aria-hidden="true">⌕</span>
+                    <input id="catalog-search" type="search" value="${escapeHtml(state.searchQuery)}" placeholder="Try “pizza” or a restaurant name" autocomplete="off">
+                    ${state.searchQuery ? `<button class="search-clear" type="button" data-action="clear-search" aria-label="Clear search">×</button>` : ""}
+                </label>
+                <div id="search-results">${restaurants}</div>
             </section>
             <section id="menu-panel" class="menu-panel" aria-label="Menu and basket">${selected}</section>
         </div>`;
+}
+
+function renderRestaurantCards(restaurants) {
+    if (!restaurants.length) {
+        return `<p class="empty-state">No restaurants to show just yet. Check back soon.</p>`;
+    }
+    return `<div class="restaurant-grid">${restaurants.map((restaurant, index) => `
+        <article class="restaurant-card">
+            <div class="restaurant-art art-${index % 4}" aria-hidden="true">
+                <span>${escapeHtml(restaurant.name?.slice(0, 1) || "F")}</span>
+                <span class="art-sparkle">✳</span>
+            </div>
+            <div class="restaurant-info">
+                <div><h2>${escapeHtml(restaurant.name)}</h2><p>${escapeHtml(restaurant.location)}</p></div>
+                <button class="button button-outline" type="button" data-action="menu" data-id="${escapeHtml(restaurant.id)}">View menu <span aria-hidden="true">→</span></button>
+            </div>
+        </article>`).join("")}</div>`;
+}
+
+function renderSearchResults() {
+    if (state.searchLoading) {
+        return `<p class="loading search-message">Searching restaurants and menus...</p>`;
+    }
+    if (!state.searchResults) {
+        return `<p class="loading search-message">Type at least two characters to search.</p>`;
+    }
+    if (state.searchResults.error) {
+        return `<p class="empty-state">${escapeHtml(state.searchResults.error)}</p>`;
+    }
+
+    const { restaurants, menuItems } = state.searchResults;
+    if (!restaurants.length && !menuItems.length) {
+        return `<p class="empty-state">No restaurants or menu items match “${escapeHtml(state.searchQuery)}”.</p>`;
+    }
+    return `
+        ${restaurants.length ? `<h3 class="search-result-heading">Restaurants</h3>${renderRestaurantCards(restaurants)}` : ""}
+        ${menuItems.length ? `<h3 class="search-result-heading">Menu items</h3><div class="search-menu-grid">
+            ${menuItems.map((item) => `
+                <article class="search-menu-card">
+                    <div class="search-menu-icon" aria-hidden="true">✳</div>
+                    <div class="search-menu-info"><h3>${escapeHtml(item.name)}</h3>
+                        <p>${formatPrice(item.price)}</p>
+                        <small>${escapeHtml(state.restaurants.find((restaurant) => restaurant.id === item.restaurantId)?.name || `Restaurant #${item.restaurantId}`)}</small>
+                    </div>
+                    <button class="button button-outline" type="button" data-action="menu" data-id="${escapeHtml(item.restaurantId)}">View menu</button>
+                </article>`).join("")}</div>` : ""}`;
 }
 
 function renderMenu(restaurant) {
@@ -244,9 +290,12 @@ async function loadRestaurants() {
 }
 
 async function loadMenu(id) {
-    const restaurant = state.restaurants.find((item) => String(item.id) === String(id));
-    if (!restaurant) return;
     try {
+        let restaurant = state.restaurants.find((item) => String(item.id) === String(id));
+        if (!restaurant) {
+            restaurant = await api.restaurant(id);
+            state.restaurants.push(restaurant);
+        }
         const menu = await api.restaurantMenu(id);
         if (state.selectedRestaurant?.id !== restaurant.id) state.cart.clear();
         state.selectedRestaurant = restaurant;
@@ -345,10 +394,62 @@ app.addEventListener("click", async (event) => {
         await loadOrders();
     } else if (action === "download-template") {
         downloadCsvTemplate();
+    } else if (action === "clear-search") {
+        state.searchQuery = "";
+        state.searchResults = null;
+        window.clearTimeout(state.searchTimer);
+        render();
     } else if (action === "logout") {
         await signOut();
     }
 });
+
+app.addEventListener("input", (event) => {
+    if (event.target.id !== "catalog-search") return;
+    state.searchQuery = event.target.value;
+    window.clearTimeout(state.searchTimer);
+    const results = document.querySelector("#search-results");
+    if (state.searchQuery.trim().length < 2) {
+        state.searchResults = null;
+        state.searchLoading = false;
+        if (results) results.innerHTML = renderSearchResults();
+        return;
+    }
+    state.searchLoading = true;
+    if (results) results.innerHTML = renderSearchResults();
+    state.searchTimer = window.setTimeout(runCatalogSearch, 300);
+});
+
+async function runCatalogSearch() {
+    const query = state.searchQuery.trim();
+    const sequence = ++state.searchSequence;
+    state.searchLoading = true;
+    try {
+        const [byName, byLocation, menuPage] = await Promise.all([
+            api.searchRestaurants(query, "name"),
+            api.searchRestaurants(query, "location"),
+            api.searchMenu(query)
+        ]);
+        if (sequence !== state.searchSequence || query !== state.searchQuery.trim()) return;
+        const restaurants = [...new Map(
+            [...byName, ...byLocation].map((restaurant) => [restaurant.id, restaurant])
+        ).values()];
+        state.searchResults = {
+            restaurants,
+            menuItems: menuPage.content || []
+        };
+    } catch (error) {
+        if (sequence !== state.searchSequence) return;
+        state.searchResults = { error: error.message, restaurants: [], menuItems: [] };
+    }
+    state.searchLoading = false;
+    const results = document.querySelector("#search-results");
+    if (results) {
+        results.innerHTML = state.searchResults.error
+            ? `<p class="empty-state">${escapeHtml(state.searchResults.error)}</p>`
+            : renderSearchResults();
+    }
+}
 
 sessionActions.addEventListener("click", async (event) => {
     const button = event.target.closest('[data-action="logout"]');

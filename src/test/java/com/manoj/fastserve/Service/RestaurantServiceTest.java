@@ -90,6 +90,24 @@ class RestaurantServiceTest {
 
     }
 
+    @Test
+    void getRestaurantById_shouldReturnActiveRestaurant() {
+        Restaurant restaurant = new Restaurant();
+        when(restaurantRepository.findByIdAndIsDeletedFalse(1L))
+                .thenReturn(Optional.of(restaurant));
+
+        assertSame(restaurant, restaurantService.getRestaurantById(1L));
+    }
+
+    @Test
+    void getRestaurantById_shouldThrowWhenNotFound() {
+        when(restaurantRepository.findByIdAndIsDeletedFalse(1L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class,
+                () -> restaurantService.getRestaurantById(1L));
+    }
+
 
 
 

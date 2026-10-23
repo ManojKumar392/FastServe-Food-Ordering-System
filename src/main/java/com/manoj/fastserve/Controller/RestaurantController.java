@@ -29,6 +29,11 @@ public class RestaurantController {
         );
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Restaurant> getRestaurant(@PathVariable Long id) {
+        return ResponseEntity.ok(restaurantService.getRestaurantById(id));
+    }
+
     @PostMapping("/{id}/menu")
     public ResponseEntity<MenuItem> addMenuItem(
             @PathVariable Long id,
